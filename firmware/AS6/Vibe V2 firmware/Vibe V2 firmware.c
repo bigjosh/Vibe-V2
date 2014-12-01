@@ -77,12 +77,9 @@
 #define CIP_BIT 1
 #define CIP_INT PCINT1
 
+#define DEBOUNCE_TIME_MS 15		// How long to wait for a button press debounce
 
-#define OCR1_PWM_TOP 1500U		// Set the motor PWM TOP which defines frequency
-
-#define DEBOUNCE_TIME_MS 100		// How long to wait for a button press debounce
-
-#define DEBOUNCE_CYCLES (DEBOUNCE_TIME_MS *  CYCLES_PER_MS)
+//#define DEBOUNCE_CYCLES (DEBOUNCE_TIME_MS *  CYCLES_PER_MS)
 
 #define LOW_BATTERY_VOLTSx10	(38-03)		// Low battery cutoff, 3.8 volts for battery less the 0.3V diode drop
 
@@ -96,19 +93,22 @@
 
 // Struct for holding speed steps
 
+// TODO: Add prescaller for more dynamic range
+
 typedef struct {
-		uint16_t normailzedDuty;			// Duty cycle normalized to 4.2 volts Vcc
+		uint16_t normailzedDuty;			// Duty cycle normalized to 4.2 volts Vcc. 0=off, 0xffff=full on at 4.2 volts power
 		uint16_t top;						// Top value, which determines the PWM frequency where 	f = F_CPU/top	
 } speedStepStruct;
 	
 	
-#define SPEED_STEP_COUNT 3
+#define SPEED_STEP_COUNT 4
 	
 const speedStepStruct speedSteps[SPEED_STEP_COUNT] = {
 	
-	{ 10, 200 },
-	{ 250, 500 },
-	{ 700, 1000 },
+	{                    0,    0 },			// step 0 = off
+	{   0b0000110001000000, 8191 },
+	{   0b0010110000000000, 8191 },
+	{	0b0110000001000000, 8191 },
 		
 };
 
@@ -120,15 +120,14 @@ const speedStepStruct speedSteps[SPEED_STEP_COUNT] = {
 // can not just be moved around.
 
 // Turn the motor completely off- disconnects from PWM generator
-// You should call this immedeately on reset to turn off the motor MOSFET 
+// You should call this immediately on reset to turn off the motor MOSFET in case R5 is missing or fails
 
 void motorOff(void) {
 
 	// First get the pin low so the MOSFET doesn't turn on.
 	// Try to do this very early in the startup.
 	
-	PORTA &= ~_BV(5);	// Set pin output to low (until now, the pin was default input and the MOSFET was held low by R5
-	
+	PORTA &= ~_BV(5);	// Set pin output to low 	
 	
 	DDRA |= _BV(5);		// Set pin to output mode
 
@@ -142,12 +141,13 @@ void motorOff(void) {
 // Note: also uses OCR1A for TOP function.
 // Note: resets all used registers each time from scratch for safety from glitches
 
-// match sets the duty cycle and should be between 0 and top. 0=off, top=on. 
-// top sets the frequency where PWM frequency = F_CPU/top
+// match sets the duty cycle and should be between 0 and top. 0=completely off, top=full on. 
+// top sets the frequency where PWM frequency = F_CPU/top. The minimum resolution allowed is 2-bit (top set to 0x0003).
 
 void setMotorPWM( uint16_t match , uint16_t top ) {
 	
 	if (match==0) {			// Special case this because the PWM generator still generates a pulse at 0 duty cycle
+							// "If the OCR1x is set equal to BOTTOM (0x0000) the output will be a narrow spike for each TOP+1 timer clock cycle."
 		
 		motorOff();
 		
@@ -160,25 +160,31 @@ void setMotorPWM( uint16_t match , uint16_t top ) {
 		// Fast PWM, TOP= OCR1A, Update OCR1x at top
 	
 		// Clock select clk	I/O/1 (No prescaling)
-	
-	
+		
+		
+		// Assign TOP first to make sure we don't miss the match
+		
+		OCR1A = top;		// Set TOP. Freq should be IOclk/OCR1A = 16Khz		
+		OCR1B = match;		// Set match which sets duty cycle
+		
+		
 		//			0bxx100000	COM1B		PWM Fast mode, Clear OC1A/OC1B on Compare Match, set OC1A/OC1B at BOTTOM (non-inverting mode)
 		//			0bxxxxxx11	WGM[11:10]	Fast PWM, TOP=OCR1A, Update at OCR TOP
 	
 		TCCR1A =	0b00100011;
 	
-		//			0b00011000	WGM[13:12]	Fast PWM TOP=OCR1A UPDATE=TOP
+		//			0b00011000	WGM[13:12]	Fast PWM TOP=OCR1A UPDATE=TOP, Compare output on pin
 		//			0b00000001	CS			clk	I/O/1 (No prescaling)
 	
 		TCCR1B =	0b00011001;
 	
-		TCNT1  = 0x00;		// Start counting at zero
-	
-		//Below should be handled in motorOn
-	
-		OCR1A = top;		// Set TOP. Freq should be IOclk/OCR1A = 16Khz
-	
-		OCR1B = match;		// Set match which sets duty cycle
+//		TCNT1  = 0x00;		// Start counting at zero
+		
+				
+		// "The actual OC1x value will only be visible on the port pin if the data direction for the port pin is set as output (DDR_OC1x)."
+							
+		DDRA |= _BV(5);		// Set pin to output mode
+		
 	}
 	
 }
@@ -266,32 +272,31 @@ uint8_t readVccVoltage(void) {
 }
 
 
-volatile uint8_t currentSpeedStep = 0;
+// Set the motor to run at the specified duty cycle and frequency
+// The duty cycle is specified at 4.2 volts as a value 0-65535. It is adjusted to scale to the actual voltage. 
+// Of course if you specify 100% at 4.2v and only 3.8v is available, then it will just give 100% at the current voltage
 
-
-// Set the motor to run at the current speed step
-
-void updateMotor(void) {
+void updateMotor( uint16_t top, uint16_t normalizedDuty, uint8_t vccx10 ) {
+			
+	unsigned long voltageAdjustedDuty = (((normalizedDuty * 42UL ) / vccx10) );		// All dutys are normalized to 4.2 volts, so adjust to the current volatge level. Note that is could overflow an uint16 if the voltage is lower than the normal value. 
 	
-	uint16_t top = speedSteps[currentSpeedStep].top;
-	
-	uint16_t normalizedDuty = speedSteps[currentSpeedStep].normailzedDuty;		// Get the normalized duty setting which is at 4.2 volts
+	unsigned long voltageAdjusedMatch = (voltageAdjustedDuty  * top ) / 65535UL;	// Covert the duty that is scaled 0-65535 to a match that is scaled 0-top.
+																					// Match = (duty/65535) * top, but we need to stay integer so switch the order
+																					// Keep as a long because it could be bigger than an int due to scaling because of a low voltage
 		
-	unsigned long adjusedDuty = (normalizedDuty *42UL) / readVccVoltage();	// Adjust duty to current voltage level, use long int to save precicion
+	uint16_t match;
 	
-	uint16_t duty;
-	
-	if (adjusedDuty > top ) {		// Battery to low for reqested duty, so give it all we've got
+	if (voltageAdjusedMatch > top ) {		// Battery to low for requested duty, so give it all we've got
 		
-		duty = top; 
+		match = top; 
 		
 	} else {
 		
-		duty = (uint16_t) adjusedDuty;		// We know that adjusted duty will fit into uint_16 here becuase it is less than top which is a uint16
+		match = (uint16_t) voltageAdjusedMatch;		// We know that adjusted duty will fit into uint_16 here because it is less than top which is a uint16
 		
 	}
 			
-	setMotorPWM( duty , speedSteps[currentSpeedStep].top  );
+	setMotorPWM( match , top  );
 
 }
 
@@ -381,6 +386,10 @@ int main(void)
 		setWhiteLED(0);
 		
 		// Button setup
+		
+		// TODO: disable pull-up if button is down when sleeping to save power. This will require a charger connection to wake up, but that is better
+		// than running the battery down. We should give visual indication of this since the factory will need to detect a stuck button.
+		
 		BUTTON_DDR &= ~_BV(BUTTON_BIT);		// Make sure pin is input mode
 		BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pull-up for button pin
 		
@@ -388,8 +397,10 @@ int main(void)
 				
 		// Battery Charger status pin setup
 		
+		// ( I know that you want to consolidate these bitfield operations, but it is ok because this code is clear and easily changed, and compiles to efficient SBI CLI opcodes)
+		
 		EOC_DDR  &= ~_BV(EOC_BIT);				// Make sure input mode
-		EOC_PORT |= _BV(EOC_BIT);				// Activate pull-up 
+		EOC_PORT |= _BV(EOC_BIT);				// Activate pull-up
 		
 		CIP_DDR &= ~_BV(CIP_BIT);				// Make sure input mode
 		CIP_PORT |= _BV( CIP_BIT);				// Activate pull-up 
@@ -417,107 +428,134 @@ int main(void)
 		sleep_disable();		
 		cli();									// We are awake now, and do don't care about interrupts anymore
 						
+						
 		// TODO: Turn on watchdog here?
+		
+		// Button Debounce Strategy:
+		// For fast response, we want react to a button down instantly without a debounce delay. We debounce by only accepting a button
+		// down trigger if the button has already been in a steady up state for at least DEBOUNCE_TIME_MS.
 				
-		uint8_t sleepFlag=0;						// A flag to tell us when to go back to sleep
-		
-		uint8_t buttonState = BUTTON_STATE_UP;		// Assume button up coming out of sleep
-		uint8_t debounceCountDown=0;				// When is it safe to register next button state change?
-		
+			
+		uint16_t buttonUpCountdown=0;				// for debouncing. when it gets to zero then we can detect another button push.
+		uint16_t buttonDownCountup=0;				// How long has the button been held down for?
+													// Note that we do not goto sleep until all bouncing is over so we know there is no
+													// bounce when we wake up 
+				
 		uint8_t ledState = 0;		// 0= Red, 1=white
 		
-		uint8_t off_count = 0;
+		uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
 		
-		while (!sleepFlag)	{		// Everything here is our normal ON operation loop
-									// Note that I don't even bother to goto sleep while we are on because the power
+			
+		do {						// Everything in here is our normal ON operation loop
+									// Note that we don't even bother to goto sleep while we are on because the power
 									// usage of the processor is so tiny compared to the motor and LEDs
-					
+									
+									
+														
 			GIFR = _BV(PCIF1) | _BV(PCIF0);					// Clear pending interrupt flags. This way we will only get an interrupt if something changes
 															// after we read it. There is a race condition where something could change between the flag clear and the
-															// reads below, so code should be able to deal with possible reduncant interrrupt and worst case
-															// is that we get woken up a n extra time. 
-												
+															// reads below, so code should be able to deal with possible redundant interrupt and worst case
+															// is that we get woken up an extra time.
+			
+			// Grab all these readings quickly after clearing the reset flags above to avoid superfluous interrupts
+															
 			uint8_t newButtonState = BUTTON_STATE_READ();	// Read actual button position		
 			uint8_t newEOCState = (EOC_PIN & _BV(EOC_BIT));	// Read actual end-of-charge state
 			uint8_t newCIPState = (CIP_PIN & _BV(CIP_BIT));	// Read actual charge-in-progress state
-						
-			if ( newButtonState != buttonState )	{	// Has the button state changed?
-				
-				
-				if (debounceCountDown==0)	{					// This is a real, new change and not just a bounce
+			
+			
+			if ( newButtonState == BUTTON_STATE_DOWN )	{	// Button currently pressed?
+								
+				if (buttonUpCountdown==0) {			// Is this a new press event?
 					
-					buttonState = newButtonState;
-					
-					if (buttonState == BUTTON_STATE_DOWN) {	// Ok, we got a new button down event...
+						// Button just pushed
 						
 						ledState = !ledState;		// Swap LEDs 
-						
+												
 						currentSpeedStep++;			// Update to next speed setting
+												
 											
-					} else {	// BUTTON_STATE_UP
+				} else {							
 												
-						off_count++;
-												
-					}
+						// Button held down
+						
+						buttonDownCountup++;
+						
+						// TODO: Off on long press...
+						
+						/*
+						
+						if (buttonDownCountup >= BUTTON_LONGPRESS_MS )	{	// Button held down for a long press...
+							
+							currentSpeedStep = 0;			// Longpress = Turn motor off
+															// This will also cause us to sleep when then button is lifted or the stuck_timeout happens
+													
+						}
+						
+						*/
+																		
 				}
-					
-				debounceCountDown = DEBOUNCE_TIME_MS;			// Start counting down to debounce
-					
-			} else {											// Has not changed since last pass
 				
-				if (debounceCountDown) debounceCountDown--;		// ...so count down debounce timer if it is currently counting
+				
+				buttonUpCountdown = DEBOUNCE_TIME_MS;		// Start countdown for debounce
+
+				
+			} else {		// Button currently up
+				
+				buttonDownCountup=0;		// not being held down any more, so reset timer
+							
+				if (buttonUpCountdown) buttonUpCountdown--;
 				
 			}
+									
 			
-		
-					
+			uint8_t vccx10 = readVccVoltage();				// Capture the current power supply voltage. This takes 1ms and will be needed multiple times below
+			
+										
 			if (currentSpeedStep>=SPEED_STEP_COUNT) {		// Fail safe overflow compare
+								
+				// We cycled though all motor steps, so time to turn off
 			
-				motorOff();
+				motorOff();					// Immediately turn off motor so we do not need to wait for a denounce for it to actually go off
 				currentSpeedStep=0;
 				
-				
-			
-			}
-		
-		for(int i=0;i<currentSpeedStep+1;i++) {
-		
-			setWhiteLED(1);
-			_delay_ms(100);
-			setWhiteLED(0);
-			_delay_ms(100);
-			
-		}
-		
-		setRedLED(1);
-		
-		updateMotor();
-			
-		_delay_ms(1000);
-				
-		motorOff();
-		
-		setRedLED(0);
-*/		
-		
-			if (ledState) {
-			
-				setWhiteLED(1);
-				setRedLED(0);
-			
 			} else {
-			
-				setWhiteLED(0);
-				setRedLED(1);
+				
+				updateMotor( speedSteps[currentSpeedStep].top , speedSteps[currentSpeedStep].normailzedDuty, vccx10);		// Set new motor speed
 			
 			}
 			
+			if (buttonUpCountdown) {
 			
-			if (off_count==3 && !debounceCountDown) {
-				sleepFlag=1;
-				_delay_ms(300);
+			
+				if (ledState) {
+			
+					setWhiteLED(1);
+					setRedLED(0);
+			
+				} else {
+			
+					setWhiteLED(0);
+					setRedLED(1);
+			
+				}
+				
+			} else {
+				
+					setWhiteLED(0);
+					setRedLED(0);
+				
 			}
 			
-		}
+		// TODO: Check for low battery and turn off motor if low
+			
+		// TODO: check for button stuck timeout and sleep...
+						
+		} while ( 1 || ( currentSpeedStep && buttonUpCountdown ) );		// If...
+																// Motor is off
+																// not in a debounce wait (if we sleep while debouncing, then we will wake up and see the bounce as a new press)
+																// ...then we are off and it is ok to deep sleep
+																
+																// note that we want to keep looping when motor is on so we can continuously adjust the duty cycle to changing Vcc voltage.  
     }
 }
