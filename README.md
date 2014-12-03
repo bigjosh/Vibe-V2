@@ -43,8 +43,6 @@ The specified motor is a vibration type nominally rated for 130mA at 3V.
 
 TODO
 ----
-* Power usage is still ~4uA at idle. Not sure why. Hopefully we can get that down to <0.1uA.
-
 * Would like to add special handling for the case where the button is stuck down- if say it is in a drawer with stuff piled on top. Right now, the CPU will goto sleep, but the pull-up resistor on the button will continue to draw about 1mA continuously until the battery is dead. Better to disconnect the resistor and require a power plug to wake up from that state. 
 
 * Smooth LED dimming using Timer0. Right now LEDs are on or off.
