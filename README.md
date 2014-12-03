@@ -21,10 +21,10 @@ Motor turns off when battery voltage drops below 3.8 volts. The red LED blinks a
 
 The white LED indicates charger status: 
 
-*Off means no charger connected
-*On means charger connected and battery fully recharged
-*Slow blink (1Hz) means charging
-*Fast blink (0.1s on, 0.9s off) means charger in "test mode", which should never happen.
+* Off means no charger connected
+* On means charger connected and battery fully recharged
+* Slow blink (1Hz) means charging
+* Fast blink (0.1s on, 0.9s off) means charger in "test mode", which should never happen.
 
 Motor is always off while charger connected. 
 
@@ -37,15 +37,15 @@ The specified motor is a vibration type nominally rated for 130mA at 3V.
 
 TODO
 ----
-*Power usage is still ~4uA at idle. Not sure why. Hopefully we can get that down to <0.1uA.
+* Power usage is still ~4uA at idle. Not sure why. Hopefully we can get that down to <0.1uA.
 
-*Would like to add special handling for the case where the button is stuck down- if say it is in a drawer with stuff piled on top. Right now, the CPU will goto sleep, but the pull-up resistor on the button will continue to draw about 1mA continuously until the battery is dead. Better to disconnect the resistor and require a power plug to wake up from that state. 
+* Would like to add special handling for the case where the button is stuck down- if say it is in a drawer with stuff piled on top. Right now, the CPU will goto sleep, but the pull-up resistor on the button will continue to draw about 1mA continuously until the battery is dead. Better to disconnect the resistor and require a power plug to wake up from that state. 
 
-*Smooth LED dimming using Timer0. Right now LEDs are on or off.
+* Smooth LED dimming using Timer0. Right now LEDs are on or off.
 
-*Power plug communication for setting up speeds and maybe reprogramming firmware.
+* Power plug communication for setting up speeds and maybe reprogramming firmware.
 
-*Easter eggs!
+* Easter eggs!
 
 
 
