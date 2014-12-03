@@ -15,7 +15,7 @@ Device is normally in a low-power off state.
 
 Button presses cycle though the 3 speed settings and then back to off.
 
-A long button press (~0.5 sec) goes striaght to off.
+A long button press (~0.5 sec) goes straight to off.
 
 Motor turns off when battery voltage drops below 3.8 volts. The red LED blinks about 0.5 sec when this happens. Subsequent button pushes blink the red LED again to indicate not enough power to turn on. 
 
@@ -28,10 +28,16 @@ The white LED indicates charger status:
 
 Motor is always off while charger connected. 
 
+Features
+--------
+* Current draw of <0.1uA when idle, so battery self drain is likely the limiting factor for maximum off time.
+* Motor  start-up acceleration limited to %1 of full scale per ms. Reduces power glitch on motor start and lowers physical wear and tear on motor. 
+* Zero latency button debounce.
+* Motor output power is scaled to battery power so motor speed stays constant though battery discharge (at least until there is not enough voltage left to maintain speed). 
 
 Connections
 -----------
-The specified battery is a 160mAh Polymer Li-ion. Verify the polarity on the connector becuase it is non-standard and reversed polarity will blow a protection diode. 
+The specified battery is a 160mAh Polymer Li-ion. Verify the polarity on the connector because it is non-standard and reversed polarity will blow a protection diode. 
 
 The specified motor is a vibration type nominally rated for 130mA at 3V.
 
