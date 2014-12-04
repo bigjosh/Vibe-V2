@@ -87,14 +87,14 @@
 
 #define DEBOUNCE_TIME_MS 15					// How long to wait for a button press debounce
 
-#define BUTTON_LONG_PRESS_MS 500			// How long to hold down button to be considered a long press rather than a push
+#define BUTTON_LONG_PRESS_MS 250			// How long to hold down button to be considered a long press rather than a push
 											// Note that a long press is always preceded by a push
 
 #define BUTTON_STUCK_TIMEOUT_MS	5000		// How long the button is held down for before we assume it is stuck and turn off to save battery
 
 //#define DEBOUNCE_CYCLES (DEBOUNCE_TIME_MS *  CYCLES_PER_MS)
 
-#define LOW_BATTERY_VOLTSx10	(38-03)		// Low battery cutoff, 3.8 volts for battery less the 0.3V diode drop
+#define LOW_BATTERY_VOLTSx10	(32-03)		// Low battery cutoff, 3.2 volts for battery less the 0.3V diode drop
 
 #define LOW_BATTERY_LED_ONTIME_MS (500)		// Show low battery by flashing red LED for 1/2 second
 
@@ -103,6 +103,9 @@
 
 #define LOOPS_PER_MS(x)	(x/MS_PER_LOOP)		// Compute the number of loops for the specified number of milliseconds
 
+
+#define MAX_MOTOR_INCREASE_PER_MS   (655)		// Maximum ratio of full range that the motor can speed up in a an millisecond (0-65535, 655~=1%)
+#define MAX_MOTOR_INCREASE_PER_LOOP (LOOPS_PER_MS(MAX_MOTOR_INCREASE_PER_MS))
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -139,8 +142,13 @@ const speedStepStruct speedSteps[SPEED_STEP_COUNT] = {
 // Note that register values are hard coded rather than #defined because they 
 // can not just be moved around.
 
+
+uint16_t currentMotorSpeed = 0;		// Keep track of current motor speed so we can do slow start (0=off, 65535=full speed)
+									// We only care about speed because we are dealing with physical inertia. This is the duty cycle and basically match/top
+									
 // Turn the motor completely off- disconnects from PWM generator
 // You should call this immediately on reset to turn off the motor MOSFET in case R5 is missing or fails
+
 
 void motorOff(void) {
 
@@ -154,6 +162,8 @@ void motorOff(void) {
 
 	TCCR1A &= ~( _BV(COM1B1) | _BV(COM1B0) );			// Disconnect Timer1A outputs from pins. "Normal port operation, OC1B disconnected"
 	
+	currentMotorSpeed = 0;
+	
 }
 
 
@@ -164,15 +174,42 @@ void motorOff(void) {
 // match sets the duty cycle and should be between 0 and top. 0=completely off, top=full on. 
 // top sets the frequency where PWM frequency = F_CPU/top. The minimum resolution allowed is 2-bit (top set to 0x0003).
 
+// We do a slow start on the motor to avoid glitching the power line and lower acceleration forces and wear and tear on the physical motor. 
+
+
 void setMotorPWM( uint16_t match , uint16_t top ) {
 	
+	uint16_t slowStartupAdjustedMatch;
+		
 	if (match==0) {			// Special case this because the PWM generator still generates a pulse at 0 duty cycle
 							// "If the OCR1x is set equal to BOTTOM (0x0000) the output will be a narrow spike for each TOP+1 timer clock cycle."
 		
 		motorOff();
 		
 	} else {
+		
+		uint16_t requestedNewMotorSpeed = (match*65535UL)/top;		// (0=off, 65535=full on)
+		
+		if (requestedNewMotorSpeed > currentMotorSpeed )	{		// Are we speeding up?  (Break out steps here to avoid overlow and negative numbers)
+							
+			if (requestedNewMotorSpeed - currentMotorSpeed > MAX_MOTOR_INCREASE_PER_LOOP )	{ // Too much acceleration?
+				
+				unsigned long maxNewMotorSpeed = currentMotorSpeed + MAX_MOTOR_INCREASE_PER_LOOP;
+												
+				slowStartupAdjustedMatch = (maxNewMotorSpeed* top)/65535;			// Compute the match that corresponds to this motorspeed at the current top
+				
+			} else {
+				
+				slowStartupAdjustedMatch = match;			// jump straight to slower speed
+								
+			}
+						
+		} else {			// Same speed or slowing down
+
+			slowStartupAdjustedMatch = match;			// jump straight to slower speed
 			
+		}
+		
 		
 		// Set OC1B on Compare Match
 		// Clear OC1B at BOTTOM (inverting mode)
@@ -184,8 +221,8 @@ void setMotorPWM( uint16_t match , uint16_t top ) {
 		
 		// Assign TOP first to make sure we don't miss the match
 		
-		OCR1A = top;		// Set TOP. Freq should be IOclk/OCR1A = 16Khz		
-		OCR1B = match;		// Set match which sets duty cycle
+		OCR1A = top;							// Set TOP. Freq should be IOclk/OCR1A = 16Khz		
+		OCR1B = slowStartupAdjustedMatch;		// Set match which sets duty cycle
 		
 		
 		//			0bxx100000	COM1B		PWM Fast mode, Clear OC1A/OC1B on Compare Match, set OC1A/OC1B at BOTTOM (non-inverting mode)
@@ -205,6 +242,8 @@ void setMotorPWM( uint16_t match , uint16_t top ) {
 							
 		DDRA |= _BV(5);		// Set pin to output mode
 		
+		currentMotorSpeed = ( (slowStartupAdjustedMatch * 65535UL) / top);
+				
 	}
 	
 }
@@ -462,12 +501,28 @@ ISR( PCINT1_vect ) {
 
 int main(void)
 {
-		
+	
+	motorOff();			// Always turn the motor off right away on start up. This makes resistor R5 unnecessary.
+			
 	// Put code here for some testing and feedback on initial battery connection at the factory. 
+	
+	// Blink LEDs to verify successful power up and give opportunity for button test
+	
+	for(int i=0;i<50 && !BUTTON_STATE_DOWN() ;i++) {
+
+		setRedLED(1);
+		setWhiteLED(0);
+		_delay_ms(100);
+		setRedLED(0);
+		setWhiteLED(1);
+		_delay_ms(100);
+					
+	}
+	
 		
 	while (1)	{	// Master loop. We pass though here every time we wake from sleep or power up. 
 		
-		motorOff();			// Always turn the motor off right away on start up. This makes resistor R5 unnecessary.		
+		motorOff();			// Turn the motor off again just in case there was a glitch. 
 		
 		// Button setup
 				
@@ -706,7 +761,7 @@ int main(void)
 				motorOff();					// Immediately turn off motor so we do not need to wait for a denounce for it to actually go off
 				
 			} else {
-				
+								
 				updateMotor( speedSteps[currentSpeedStep].top , speedSteps[currentSpeedStep].normailzedDuty, vccx10);		// Set new motor speed
 			
 			}
