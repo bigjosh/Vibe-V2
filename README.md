@@ -11,8 +11,6 @@ https://github.com/bigjosh/VibeSystem
 
 User Interface
 --------------
-When initially powered up, the device enters a test mode where the LEDs blink back and forth. Test mode is terminated by either a button press or a 10 second timeout, after which the device enters normal off state and waits for a button press. This test mode lets you verify that both LEDs and button are working.
-
 Device is normally in a low-power off state.
 
 Each press of the button steps to the next speed setting. There are 3 speed settings (low, medium, high) and 4th button press returns to off state.
@@ -29,6 +27,11 @@ The white LED indicates charger status:
 * Fast blink (0.1s on, 0.9s off) means charger in "test mode", which should never happen.
 
 Motor is always off while charger connected. 
+
+Test Mode
+---------
+When the device is initially connected to power, it enters a test mode where the LEDs blink back and forth. Test mode is terminated by either a button press or a 10 second timeout, after which the device enters normal off state and waits for a button press. This test mode lets you verify that both LEDs and button are working.
+
 
 Features
 --------
