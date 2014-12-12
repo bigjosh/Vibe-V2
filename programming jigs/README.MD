@@ -8,6 +8,10 @@ There are several jig versions....
 - BACK versions let you program from the back, which is handy for new boards striaght off the line. 
     
     6 and 10 pin versions differ only in the number of pins on the header. Different AVR programmer models use different numbers of pins.
+
+
+![6 pin front](https://raw.githubusercontent.com/bigjosh/Vibe-V2/master/programming%20jigs/photos/DSC07862.JPG "6 pin front")
+![10 pin back](https://raw.githubusercontent.com/bigjosh/Vibe-V2/master/programming%20jigs/photos/DSC07900.JPG "10 pin back")
     
 These jigs are completely passive and only route the signals from the header to the test points on the board. 
 
