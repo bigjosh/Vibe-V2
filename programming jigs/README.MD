@@ -22,12 +22,12 @@ https://github.com/bigjosh/Vibe-V2/releases
 
 Use
 ---
-6. Connect a VIBE V2 board to the jig. Video for the 10-pin backside jig is here...<br>
+6. Connect a VIBE V2 board to the jig. Video showing the 10-pin backside jig is here...<br>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=tlA72ofPwDw" target="_blank"><img src="http://img.youtube.com/vi/tlA72ofPwDw/0.jpg" 
 width="240" height="180" border="10" /></a>
-4. Launch a Command Window in the directory with the firmware hex file and type the following command..<br>
+4. Launch a Command Window in the directory with the firmware hex file and enter the following command..<br>
 `AVRDUDE -c usbtiny -p84 -U flash:w:vibe10-flash.hex -B 4`<br>
 Note that the `-U` and `-B` are case sensitive! 
-5. Remove the board and repeat previous 2 steps for each additional board. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command. 
+5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
 
 
