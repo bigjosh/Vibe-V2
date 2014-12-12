@@ -29,6 +29,9 @@ https://github.com/bigjosh/Vibe-V2/releases
 
 Use
 ---
+1. The Pocket Programmer seems to be sensitive to static electricity and sometimes looses the USB connection 
+to the computer when you instert a new board. If you do loose the connection, you will get an 
+`Unable to connect to USBtiny` message. I've found that grounding yourself with a braclet to a real gorund (not the just ground pin on the programmer) while insterting soves this problem. Note that this does not seem to be a problem with other programmers like the ATMEL Dragon. 
 6. Connect a VIBE V2 board to the jig. Video showing the 10-pin backside jig is here...<br>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=tlA72ofPwDw" target="_blank"><img src="http://img.youtube.com/vi/tlA72ofPwDw/0.jpg" 
 width="240" height="180" border="10" /></a>
