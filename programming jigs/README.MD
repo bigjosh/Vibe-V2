@@ -27,7 +27,6 @@ The following instructions show how to setup and use the programming jig with an
 http://www.atmel.com/products/microcontrollers/avr/start_now.aspx
 2. Install a jumper wire from a VCC pin to pin #4 on the JTAG header on the board like this...
 ![Supply power to target pin jumper](https://wpdotjoshdotcom.files.wordpress.com/2014/12/wpid-20141212_122136-11.jpg)
-
 This will supply power to the target board while programming. More info [here](http://wp.josh.com/2014/12/12/easy-hack-to-allow-an-avr-dragon-to-power-the-target-device-over-the-isp-cable/). 
 3. Connect the the programming jig to the Dragon using either a 6 or 10 pin cable (depending on which jig and cables you have).
 
@@ -47,7 +46,7 @@ width="240" height="180" border="10" /></a>
 
 #USBTINY programmer 
 
-The following instructions show how to setup and use the programming jig with a USBTINY style programmer like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
+The following instructions show how to setup and use the programming jig with a USBTINY style programmer (like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
 and a Windows 7/8 machine. 
 
 
