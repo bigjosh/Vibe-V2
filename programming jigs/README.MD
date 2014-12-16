@@ -45,7 +45,7 @@ https://github.com/bigjosh/Vibe-V2/releases
 width="240" height="180" border="10" /></a>
 4. Launch an ATMEL Studio Command Window (*a shortcut should have been created durring install) and change into the directory with the firmware hex file.
 5. Enter the following command ..<br>
-`atprogram -t avrdragon -i isp -d attiny84a -cl 250khz program -c -fl  -f read.hex --verify`
+`atprogram -t avrdragon -i isp -d attiny84a -cl 250khz program -c -fl  -f vibe10-flash.hex --verify`
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
 
