@@ -18,6 +18,11 @@ There are several jig versions....
     
 These jigs are completely passive and only route the signals from the header to the test points on the board. 
 
+Besides the jig, you will also need an AVR programmer capable a serial programing and supplying power to the target. 
+Almost any AVR programmer can meet the requirements. 
+
+Below are set and use instructions for either an ATMEL Dragon programmer or a USBTINY programmer. Other programmers will be similar to one of these.
+
 #AVR Dragon Programmer
 
 The following instructions show how to setup and use the programming jig with an [ATMEL Dragon board](http://www.atmel.com/tools/avrdragon.aspx) and a Windows 7/8 machine. 
