@@ -1,29 +1,40 @@
 Vibe FAB Notes
 ================
 
-THIS BOARD HAS NOT BEEN TESTED. DO NOT PRODUCE!
-
 1. Fabrication
 
 Double side PCB, 25mm x 33mm with multiple edges, board total thickness of ~0.063",  ENIG finish.
 
-Note that bottom side of PCB has no traces, only pads for the through holes. 
+Note that bottom side of PCB has no traces, only pads for the through holes, so the bottom paste layer is empty. 
 
-No impedance control. 
+No impedance control.
 
 1oz copper, FR4 or FR1 material.
 
-Green solder mask
+Green solder mask.
 
 Optional White Legend. The silk layers are provided for reference and for test boards and are not required on production boards.
 
-Minimal clearance size: 7 mils. Minimal trace width: 8 mils. 
+Minimal clearance size: 7 mils. Minimal trace width: 6 mils. 
 
 All holes plated though.
 
 There are three internal milled slots specified in the drill hits file. These should be plated though.
 
+The inlcuded top paste layer only includes SMD pads and does not include the bottom mounted jack and connectors. 
+
+The inlcuded top paste layer matches the pad sizes with no shrink or swell and should be adjusted depending on stencil type and process.
+
+MCP1 is an MSOP-10 package with 0.5mm pin pitch. Top mask and paste layers for this part may need to me adjusted depending on process. 
+
 
 2. Assembly
 
 Reflow soldering. 
+
+
+3. Part orentation
+
+Dot on silkscreen layer indicates the cathode on parts D1, D2, D3, RED, and WHITE. 
+
+Parts D1, D2, and D3 are marked with a stripe on the cathode side. 
