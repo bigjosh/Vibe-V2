@@ -1,0 +1,23 @@
+Vibe 2.2 Notes
+==============
+
+THIS BOARD HAS NOT BEEN TESTED. DO NOT PRODUCE!
+
+This board is optimized for low cost manufacture. 
+
+*No silk layers. Use Assy layer or drawing for part locations. 
+
+*Single sided.
+
+*No though-hole plating. All holes have pads on top side only.
+
+*Minimum copper-to-copper clearance is 0.01 inches.
+
+*Resistors are 0603 size. 
+
+*Copper fill for minimum etched area.
+
+This board is single sided with copper on the top side only. Files for additional layers are included for reference only. Hole need not be through plated. 
+
+Note that 3D previews show silk and bottom copper. This is an artifact of the 3D render software. There should not be silk on the top or anything on the bottom of this version of the board. The gerbers are correct.
+
