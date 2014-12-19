@@ -7,16 +7,23 @@ THIS BOARD HAS NOT BEEN TESTED. DO NOT PRODUCE!
 
 Double side PCB, 25mm x 33mm with multiple edges, board total thickness of ~0.063",  ENIG finish.
 
-No impedance control. 1oz copper, FR4 or FR1 material, Any color solder mask, White Legend, Minimal clearance/via size: 8 mils.
+Note that bottom side of PCB has no traces, only pads for the through holes. 
 
-All holes plated though. 
+No impedance control. 
 
-There are three internal milled slots specified in the drill hits file. These should be plated though. 
+1oz copper, FR4 or FR1 material.
+
+Green solder mask
+
+Optional White Legend. The silk layers are provided for reference and for test boards and are not required on production boards.
+
+Minimal clearance size: 7 mils. Minimal trace width: 8 mils. 
+
+All holes plated though.
+
+There are three internal milled slots specified in the drill hits file. These should be plated though.
 
 
 2. Assembly
 
-Top side requires reflow soldering.
-
-F1 and F2 are 1.524mm fiducial circles. 
-
+Reflow soldering. 
