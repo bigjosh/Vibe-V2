@@ -1,23 +1,22 @@
-Vibe 2.2 Notes
-==============
+Vibe FAB Notes
+================
 
 THIS BOARD HAS NOT BEEN TESTED. DO NOT PRODUCE!
 
-This board is optimized for low cost manufacture. 
+1. Fabrication
 
-*No silk layers. Use Assy layer or drawing for part locations. 
+Double side PCB, 25mm x 33mm with multiple edges, board total thickness of ~0.063",  ENIG finish.
 
-*Single sided.
+No impedance control. 1oz copper, FR4 or FR1 material, Any color solder mask, White Legend, Minimal clearance/via size: 8 mils.
 
-*No though-hole plating. All holes have pads on top side only.
+All holes plated though. 
 
-*Minimum copper-to-copper clearance is 0.01 inches.
+There are three internal milled slots specified in the drill hits file. These should be plated though. 
 
-*Resistors are 0603 size. 
 
-*Copper fill for minimum etched area.
+2. Assembly
 
-This board is single sided with copper on the top side only. Files for additional layers are included for reference only. Hole need not be through plated. 
+Top side requires reflow soldering.
 
-Note that 3D previews show silk and bottom copper. This is an artifact of the 3D render software. There should not be silk on the top or anything on the bottom of this version of the board. The gerbers are correct.
+F1 and F2 are 1.524mm fiducial circles. 
 
