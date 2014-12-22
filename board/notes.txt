@@ -30,11 +30,11 @@ MCP1 is an MSOP-10 package with 0.5mm pin pitch. Top mask and paste layers for t
 
 2. Assembly
 
-Reflow soldering. 
+Reflow soldering.
 
 
 3. Part orentation
 
-Dot on silkscreen layer indicates the cathode on parts D1, D2, D3, RED, and WHITE. 
+Dot on silkscreen layer indicates the cathode direction on parts D1, D2, D3, RED, and WHITE. 
 
 Parts D1, D2, and D3 are marked with a stripe on the cathode side. 
