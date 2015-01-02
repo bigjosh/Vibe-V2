@@ -48,6 +48,13 @@
 
 // Inputs
 
+
+#define BATTERY_SENSE_PORT PORTA
+#define BATTERY_SENSE_DDR DDRA
+#define BATTERY_SENSE_BIT 3
+#define BATTERY_INT 
+
+
 #define BUTTON_PORT PORTB
 #define BUTTON_PIN	PINB
 #define BUTTON_DDR  DDRB
@@ -71,6 +78,23 @@
 // (Compiles down to a single SBIC instruction)
 
 #define EOC_STATE_ACTIVE()		((EOC_PIN & _BV(EOC_BIT))==0)
+
+
+// The JACK IO pin is connected to the hot pin of the
+// charging jack though a 1K resistor. It could be used
+// to detect a charger connection or for a half duplex 
+// serial connection
+
+#define JACK_PORT	PORTB
+#define JACK_BIT	1
+#define JACK_DDR	DDRB
+#define JACK_PIN	PINB
+#define JACK_INT	PCINT9
+
+// Jack is normally pulled-up by internal resistor, but a slave device can momentarily 
+// pull it low to request a connection. 
+
+#define JACK_STATE_REQUEST() (( JACK_PIN & _BV(JACK_BIT))==0) 
 
 // CIP is the charge-in-progress (battery full) signal. It s Active LOW.
 // It is connected to the STAT1 line from the battery controller
@@ -494,6 +518,9 @@ ISR( PCINT1_vect ) {
 
 */
 
+#define DATA_STATE_IDLE		0
+
+uint8_t data_state=DATA_STATE_IDLE;	
 
 // Note that the architecture here is a little unconventional. We are constantly resetting all the registers which might seem
 // wasteful, but this protects us from many glitches. We have plenty of CPU cycles to spare, and in this application
@@ -521,13 +548,21 @@ int main(void)
 	
 		
 	while (1)	{	// Master loop. We pass though here every time we wake from sleep or power up. 
-		
+			
 		motorOff();			// Turn the motor off again just in case there was a glitch. 
+		
+		// Now get everything set up to wake us when necessary
 		
 		// Button setup
 				
 		BUTTON_DDR &= ~_BV(BUTTON_BIT);		// Make sure pin is input mode
 		BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pull-up for button pin
+		
+		// Jack data setup
+		
+		JACK_DDR &= ~_BV(JACK_BIT);			// Jack is input to detect a connected slave
+		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power
+											// To the connected slave until it can wake up.									
 		
 		
 		// LED setup
@@ -554,8 +589,8 @@ int main(void)
 		PCMSK0 |= _BV(EOC_INT);					// Enable interrupt on change in state-of-charge pin
 		PCMSK0 |= _BV(CIP_INT);					// Enable interrupt on change in end-of-charge pin
 		PCMSK1 |= _BV(BUTTON_INT);				// Enable interrupt on button pin so we wake on a press
-		
-		
+		PCMSK1 |= _BV(BUTTON_INT);				// Enable interrupt on jack input so we wake on a slave connection request
+				
 		GIFR = _BV(PCIF1) | _BV(PCIF0);			// Clear pending interrupt flags. This way we will only get an interrupt if something changes
 												// after we read it. There is a race condition where something could change between the flag clear and the
 												// reads below, so code should be able to deal with possible redundant interrupt and worst case
@@ -607,7 +642,7 @@ int main(void)
 		*/
 										
 		
-		if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE() && !BUTTON_STATE_DOWN() ) {					// Any reason to stay awake? If any of these are set now, then skip going to sleep since the interrupt will only happen on changes
+		if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE() && !BUTTON_STATE_DOWN() &&!JACK_STATE_REQUEST()  ) {					// Any reason to stay awake? If any of these are set now, then skip going to sleep since the interrupt will only happen on changes
 						
 			// Ok, it is bedtime!			
 		
@@ -771,7 +806,24 @@ int main(void)
 			switch (whiteLEDState) {
 				
 				case OFF:
-							setWhiteLED(0);
+				
+				
+				
+							// just for testing so I can see if they work without a motor!
+			
+							// TODO: Remove
+			
+							if (BUTTON_STATE_DOWN() && ticks & 0b00000100) {
+								
+								setWhiteLED(1);
+							} else {
+								setWhiteLED(0);
+							
+							}
+				
+				
+				
+//							setWhiteLED(0);
 							break;
 				
 				case ON:
@@ -821,6 +873,8 @@ int main(void)
 			}
 			
 			ticks++;				// uint8 so will wrap at 0xff back to 0
+			
+			
 			
 						
 		} while ( (currentSpeedStep || buttonUpCountdown>0 || redLedCountdown || (whiteLEDState!=OFF) ) && (buttonDownCountup<=LOOPS_PER_MS(BUTTON_STUCK_TIMEOUT_MS)) );
