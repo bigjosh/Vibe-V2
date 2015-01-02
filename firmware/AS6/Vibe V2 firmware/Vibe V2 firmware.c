@@ -467,19 +467,18 @@ void setRedLED( uint8_t b ) {
 // *Change in battery charger status lines
 // *Incoming bit on the power port
 
-ISR( PCINT0_vect ) {
+EMPTY_INTERRUPT( PCINT0_vect );
+
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program. 
 	// TODO: Figure out how to just put an IRET in the vector table to save time and code space.
-}
 
 
-ISR( PCINT1_vect ) {
+EMPTY_INTERRUPT( PCINT1_vect );
+
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program.
 	// TODO: Figure out how to just put an IRET in the vector table to save time and code space.
-}
-
 
 /*
 
@@ -561,9 +560,7 @@ int main(void)
 		// Jack data setup
 		
 		JACK_DDR &= ~_BV(JACK_BIT);			// Jack is input to detect a connected slave
-		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power
-											// To the connected slave until it can wake up.									
-		
+		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power											// To the connected slave until it can wake up.									
 		
 		// LED setup
 				
