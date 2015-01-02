@@ -1,5 +1,5 @@
-VIBE V2 Programming Jig Instructions
-=====================================
+#VIBE V2 Programming Jig Instructions
+
 These jigs let you reprogram the ATTINY84A on the VIBE V2 board. You have full access to flash, EEPROM, and fuses.
 
 There are several jig versions....
@@ -18,7 +18,44 @@ There are several jig versions....
     
 These jigs are completely passive and only route the signals from the header to the test points on the board. 
 
-Set up (Windows with [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825))
+Besides the jig, you will also need an AVR programmer capable a serial programing and supplying power to the target. 
+Almost any AVR programmer can meet the requirements. 
+
+Below are set and use instructions for either an ATMEL Dragon programmer or a USBTINY programmer. Other programmers will be similar to one of these.
+
+#AVR Dragon Programmer
+
+The following instructions show how to setup and use the programming jig with an [ATMEL Dragon board](http://www.atmel.com/tools/avrdragon.aspx) and a Windows 7/8 machine. 
+
+##Set up
+1. Follow these instructions to download and install ATMEL Studio...<br>
+http://www.atmel.com/products/microcontrollers/avr/start_now.aspx
+2. Install a jumper wire from a VCC pin to pin #4 on the JTAG header on the board like this...
+![Supply power to target pin jumper](https://wpdotjoshdotcom.files.wordpress.com/2014/12/wpid-20141212_122136-11.jpg)
+This will supply power to the target board while programming. More info [here](http://wp.josh.com/2014/12/12/easy-hack-to-allow-an-avr-dragon-to-power-the-target-device-over-the-isp-cable/). 
+3. Connect the the programming jig to the Dragon using either a 6 or 10 pin cable (depending on which jig and cables you have).
+
+4. Download the latest firmware image as a hex file from here...<br>
+https://github.com/bigjosh/Vibe-V2/releases
+
+##Use
+---
+1. Connect a VIBE V2 board to the jig. Video showing the 10-pin backside jig is here...<br>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=tlA72ofPwDw" target="_blank"><img src="http://img.youtube.com/vi/tlA72ofPwDw/0.jpg" 
+width="240" height="180" border="10" /></a>
+4. Launch an ATMEL Studio Command Window (*a shortcut should have been created durring install) and change into the directory with the firmware hex file.
+5. Enter the following command ..<br>
+`atprogram -t avrdragon -i isp -d attiny84a -cl 250khz program -c -fl  -f vibe10-flash.hex --verify`
+5. Wait for the programing to complete and check that the verify succeeded. 
+5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
+
+#USBTINY programmer 
+
+The following instructions show how to setup and use the programming jig with a USBTINY style programmer (like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
+and a Windows 7/8 machine. 
+
+
+##Set up
 ------
 1. Follow these instructions to download and install drivers for the board...<br>
 https://learn.adafruit.com/usbtinyisp/drivers
@@ -38,6 +75,8 @@ width="240" height="180" border="10" /></a>
 4. Launch a Command Window in the directory with the firmware hex file and enter the following command..<br>
 `AVRDUDE -c usbtiny -p84 -U flash:w:vibe10-flash.hex -B 4`<br>
 Note that the `-U` and `-B` are case sensitive! 
+5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
+
 
 

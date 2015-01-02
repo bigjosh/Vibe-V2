@@ -1,0 +1,14 @@
+,,,,,,,,,
+#,Designator,Description,Quantity,Manufacturer,Manufacturer Part Number,Supplier,Supplier Part Number,Mounting Type,Substitue part ok?
+1,"C1, C3, C4",CAP CER 10UF 10V 20% X5R 0603,3,Taiyo Yuden,LMK107BJ106MALTD,Digi-Key,587-2562-1-ND,Surface Mount,Yes
+2,"D2,D3,D4",DIODE SCHOTTKY 30V 0.2A SOD523,3,ON Semiconductor,BAT54XV2T1G,Digi-Key,BAT54XV2T1GOSCT-ND,Surface Mount,Yes
+3,RED,LED SMARTLED 630NM RED 0603 SMD,1,OSRAM Opto Semiconductors Inc,LS L29K-G1J2-1-Z,Digi-Key,475-2506-1-ND,Surface Mount,Yes
+4,WHITE,LED WHITE HIGH BRIGHT ESS SMD,1,Panasonic Electronic Components,LNJ037X8ARA,Digi-Key,LNJ037X8ARACT-ND,Surface Mount,Yes
+5,J1,CONN PWR JACK DC 0.65X2.75MM,1,CUI Inc,PJ1-022,Digi-Key,CP1-022-ND,"Through Hole, Right Angle",
+6,"BAT, MOTOR",CONN HEADER 2POS 1.25MM VERT TIN,2,Molex Inc,0530470210,Digi-Key,WM1731-ND,Through Hole,
+7,Q1,MOSFET N-CH 30V 3.8A SOT23,1,Alpha & Omega Semiconductor Inc,AO3418,Digi-Key,785-1012-1-ND,Surface Mount,Yes
+8,"R1, R2, R6",RES 1K OHM 1/10W 5% 0603 SMD,3,Panasonic Electronic Components,ERJ-3GEYJ102V,Digi-Key,P1.0KGTR-ND,Surface Mount,Yes
+9,"R3, R4",RES 10K OHM 1/10W 5% 0603 SMD,2,Panasonic Electronic Components,ERJ-3GEYJ103V,Digi-Key,P10KGTR-ND,Surface Mount,Yes
+10,J1,SWITCH TACTILE SPST-NO 0.05A 12V GULL,1,E-Switch,TL3302AF130QG,Digi-Key,EG4582CT-ND,Surface Mount,
+11,MCP1,IC LI-ION/LI-POLY CTRLR 10MSOP,1,Microchip Technology,MCP73833T-AMI/UN,Digi-Key,MCP73833T-AMI/UN-ND,Surface Mount,
+12,U1,IC MCU 8BIT 8KB FLASH 14SOIC,1,Atmel,ATTINY84A,Digi-Key,ATTINY84A-SSU-ND,Surface Mount,ATTINY44/24 also possible
