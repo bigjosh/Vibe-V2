@@ -92,9 +92,9 @@
 #define JACK_INT	PCINT9
 
 // Jack is normally pulled-up by internal resistor, but a slave device can momentarily 
-// pull it low to request a connection. 
+// pull it low to request a connection or send a 0 bit
 
-#define JACK_STATE_REQUEST() (( JACK_PIN & _BV(JACK_BIT))==0) 
+#define JACK_STATE_LOW() (( JACK_PIN & _BV(JACK_BIT))==0) 
 
 // CIP is the charge-in-progress (battery full) signal. It s Active LOW.
 // It is connected to the STAT1 line from the battery controller
@@ -385,30 +385,37 @@ void updateMotor( uint16_t top, uint16_t normalizedDuty, uint8_t vccx10 ) {
 
 // We use Timer0 for timing functions and also PWMing the LEDs
 
-#define TIMER0PRESCALER	1024
+#define TIMER0PRESCALER	8
 
-#define TIMER0_CYCLES_PER_S	(CYCLES_PER_S/TIMER0PRESCALER)
+#define TIMER0_STEPS_PER_S	(CYCLES_PER_S/TIMER0PRESCALER)
 
-// With a 1Mhz clock, this comes out to 976.5625Hz
+#define TIMER_0_STEPS_PER_CYCLE 256		// 8-bit timer overflow
+
+#define TIMER0_CYCLES_PER_S (TIMER_0_STEPS_PER_CYCLE/TIMER0_STEPS_PER_S)
+
+// With a 1Mhz clock, the cycle rate comes out to 488.3 hertz, which is more than fast enough for no flicker on the LEDs
+
+// Note that this just turns on the timer. For the LEDs to come on, we need to set the control bits to let the compare bits show up on the pins
+// Also note that we are running in inverted mode, which means there will be a tiny glitch each cycle at full power (I should have put the LEDs in backwards!)
 
 void setupTimer0() {
-	
-		//   0b10xxxxxx	-COM0A1 | COM0a0	Clear OC0A1 on Compare MatchClear OC0B on Compare Match, set OC0B at BOTTOM (non-inverting mode)
-		//   0bxx10xxxx	-COM0B1 | COM0B0	Clear OC0B1 on Compare MatchClear OC0B on Compare Match, set OC0B at BOTTOM (non-inverting mode)
-		//   0bxxxxxx11	-WGM01| WGM00		Mode 3 Fast PWM TOP=0xff, update OCRx at BOTTOM
-		//   ===========
-	TCCR0A = 0b10100011 ;
-	
-	
-		//   0bxxxx0xxx	-~WGM02				Mode 3 Fast PWM TOP=0xff, update OCRx at BOTTOM
-		//	 0bxxxxx101 CS02 | ~CS01 | CS0	clk/1024 (From prescaler). This is the highest  prescaller available
 		
-	TCCR0B = 0b00000101;	
+	TCNT0 = 0;		// Start timer counter at 0;
+	
+	TCCR0A = _BV( WGM01) | _BV( WGM00 ) ;	// Mode 3 Fast PWM TOP=0xff, update OCRx at BOTTOM
+		
+		//   0bxxxx0xxx	-~WGM02				Mode 3 Fast PWM TOP=0xff, update OCRx at BOTTOM
+		//	 0bxxxxx010 CS01				clk/8 (From prescaler). 		
+		//   ===========
+	TCCR0B = 0b00000010;	
 	
 	OCR0A = 0;		// Start with LEDs off
 	OCR0B = 0;	
+	
+//	TIMSK0 = _BV(TOIE0);		// Enable interrupt on overflow (about 1kHz)
 		
 }
+
 
 /*
 // Called when the button is pressed
@@ -428,35 +435,47 @@ void buttonLongPress() {
 
 */
 
+
+// Set brightness of LEDs. 0=off, 255=full on
+
 void setWhiteLED( uint8_t b ) {
 	
-	WHITE_LED_DDR  |= _BV(WHITE_LED_BIT);
+	WHITE_LED_DDR  |= _BV(WHITE_LED_BIT);		// Pin to output
+	
+	WHITE_LED_PORT &= ~_BV(WHITE_LED_BIT);		// Output to low if we end up being off
+	
+	OCR0A = ~b;									// Set the compare register (even though it won't matter if set to zero)
+												// not-ed becuase we are generating an inverted waveform
+				
+	if (b==0)	{	// Off
 		
-	if (b==0) {
-		
-		WHITE_LED_PORT &= ~_BV(WHITE_LED_BIT);
-		
-		
+		TCCR0A &= ~ ( _BV( COM0A1  ) | _BV( COM0A0 ) );		// Normal port operation, OC0A disconnected
+	
 	} else {
 		
-		WHITE_LED_PORT |= _BV(WHITE_LED_BIT);
-		
-	}
+		TCCR0A |= ( _BV( COM0A1  ) | _BV( COM0A0 ) );		// Set OC0A on Compare Match, Clear OC0A at BOTTOM (inverting mode)
+						
+	}		
 		
 }
 
 void setRedLED( uint8_t b ) {
 	
 	RED_LED_DDR  |= _BV(RED_LED_BIT);
+	
+	RED_LED_PORT &= ~_BV(RED_LED_BIT);
+			
+	OCR0B = ~b;									// Set the compare register (even though it won't matter if set to zero)
+												// not-ed becuase we are generating an inverted waveform
+	
+	if (b==0)	{	// Off
 		
-	if (b==0) {
+		TCCR0A &= ~ ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Normal port operation, OC0B disconnected
 		
-		RED_LED_PORT &= ~_BV(RED_LED_BIT);
-				
 	} else {
 		
-		RED_LED_PORT |= _BV(RED_LED_BIT);
-	
+		TCCR0A |= ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Set OC0B on Compare Match, Clear OC0B at BOTTOM (inverting mode)
+		
 	}
 	
 }
@@ -534,21 +553,48 @@ int main(void)
 	
 	// Blink LEDs to verify successful power up and give opportunity for button test
 	
+	setupTimer0();			// Initialize the timer that also PWMs the LEDs
+		
+	// Blink red/white 50 times back and forth on startup 
+		
 	for(int i=0;i<50 && !BUTTON_STATE_DOWN() ;i++) {
+		
+		uint8_t j=0;
+		
+		do {
+			
+			setRedLED(j);
+			setWhiteLED(~j);
 
-		setRedLED(1);
-		setWhiteLED(0);
-		_delay_ms(100);
-		setRedLED(0);
-		setWhiteLED(1);
-		_delay_ms(100);
-					
+			_delay_ms(1);
+			
+			j++;
+			
+			
+		} while ( j != 0);
+		
+		do {
+			
+			setRedLED(~j);
+			setWhiteLED(j);
+			
+			_delay_ms(1);
+						
+			j++;
+			
+		} while ( j != 0);
+							
 	}
 	
 		
 	while (1)	{	// Master loop. We pass though here every time we wake from sleep or power up. 
 			
 		motorOff();			// Turn the motor off again just in case there was a glitch. 
+		
+		setRedLED(0);		// LEDs off and in input state (they should be held low by the diodes (LEDs) to ground
+		setWhiteLED(0);		// If we left them in OUTPUT mode, then the Timer could potentially leave them on. 
+				
+		setupTimer0();			// Initialize the 1kHz timer that also PWMs the LEDs
 		
 		// Now get everything set up to wake us when necessary
 		
@@ -564,8 +610,6 @@ int main(void)
 		
 		// LED setup
 				
-		setRedLED(0);		// LEDs off and in output state
-		setWhiteLED(0);
 				
 		// Battery Charger status pin setup
 				
@@ -574,8 +618,7 @@ int main(void)
 		
 		CIP_DDR &= ~_BV(CIP_BIT);				// Make sure input mode
 		CIP_PORT |= _BV( CIP_BIT);				// Activate pull-up
-		
-		
+				
 		// Get ready to sleep
 						
 		// We must enable the interrupts and then clear the flags *before* testing to avoid a race condition where
@@ -620,6 +663,7 @@ int main(void)
 			PCMSK1 &= ~_BV(BUTTON_INT);		// Disable interrupt on button pin.
 			// This will cause the pin to be disconnected when we sleep which
 			// will save power incase it starts to float.
+			
 			// Note that we will only be able to wake on a change in battery charger state, but that is
 			// ok since a stuck button is an error condition and worth not killing the battery for
 				
@@ -636,10 +680,11 @@ int main(void)
 		}
 
 
-		*/
-										
+		*/										
 		
-		if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE() && !BUTTON_STATE_DOWN() &&!JACK_STATE_REQUEST()  ) {					// Any reason to stay awake? If any of these are set now, then skip going to sleep since the interrupt will only happen on changes
+		// Any reason to stay awake? If any of these are set now, then skip going to sleep since the interrupt will only happen on changes
+		
+		if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE() && !BUTTON_STATE_DOWN() && !JACK_STATE_LOW()  ) {
 						
 			// Ok, it is bedtime!			
 		
@@ -654,15 +699,17 @@ int main(void)
 			sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts." 
 			sleep_cpu();							// This must come right after the sei() to avoid race condition
 				
-			// GOOD MORNING!u
+			// GOOD MORNING!
 			// If we get here, then a button push or change in charger status woke s up....
 				
 			sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer’s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
 			cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)						
 						
 		}
+		
+		// Ok, we are now turned on and ready for whatever action comes (came?) our way!
 						
-		// TODO: Turn on watchdog here?
+		// TODO: Turn on watchdog here? If added, remember to turn it off before going to sleep.
 		
 		// Button Debounce Strategy:
 		// For fast response, we want react to a button down instantly without a debounce delay. We debounce by only accepting a button
@@ -679,7 +726,21 @@ int main(void)
 		typedef enum { OFF, ERROR_BLINK, CHARGE_BLINK, ON } whiteLEDStates ;
 		whiteLEDStates whiteLEDState=OFF;			// White LED used for charger status
 		
+
+		// State info for reading data from the power jack
+
+		typedef enum { 
+			JACK_IDLE,					// Waiting for start bit
+			JACK_START,					// Reading start bit
+			JACK_DATA,					// Reading data bits
+			JACK_ON 
+			} JackDataStates;		// Current state
+			
+		JackDataStates jackDataState = JACK_IDLE;			
+		uint8_t databyte;										
 				
+				
+		// Motor speed
 		uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
 		
 													
@@ -810,10 +871,12 @@ int main(void)
 			
 							// TODO: Remove
 			
-							if (BUTTON_STATE_DOWN() && ticks & 0b00000100) {
+							if (BUTTON_STATE_DOWN()) {
+																
+								setWhiteLED( ticks & 0xff );
 								
-								setWhiteLED(1);
 							} else {
+								
 								setWhiteLED(0);
 							
 							}
