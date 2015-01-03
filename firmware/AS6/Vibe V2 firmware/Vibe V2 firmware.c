@@ -23,7 +23,7 @@
  
 */
  
- 
+  
 // CPU speed in Hz. Needed for timing functions.
 // This is the default fuse setting and works fine for PWM frequencies up to about 10Khz (1% lowest duty), or 100KHz (10% lowest duty). 
 // This suits the current speed settings, but a high clock might be needed for higher PWM frequencies
@@ -136,7 +136,8 @@
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
-
+#include <avr/eeprom.h>
+#include <avr/wdt.h>
 
 // Struct for holding speed steps
 
@@ -398,7 +399,7 @@ void updateMotor( uint16_t top, uint16_t normalizedDuty, uint8_t vccx10 ) {
 // Note that this just turns on the timer. For the LEDs to come on, we need to set the control bits to let the compare bits show up on the pins
 // Also note that we are running in inverted mode, which means there will be a tiny glitch each cycle at full power (I should have put the LEDs in backwards!)
 
-void setupTimer0() {
+void enableTimer0() {
 		
 	TCNT0 = 0;		// Start timer counter at 0;
 	
@@ -416,6 +417,12 @@ void setupTimer0() {
 		
 }
 
+void disableTimer0() {
+
+	TCCR0B = 0;			// No clock, timer stopped. 
+	TIMSK0 = 0;			// No interrupts from anywhere!
+	
+}
 
 /*
 // Called when the button is pressed
@@ -445,11 +452,10 @@ void setWhiteLED( uint8_t b ) {
 	WHITE_LED_PORT &= ~_BV(WHITE_LED_BIT);		// Output to low if we end up being off
 	
 	OCR0A = ~b;									// Set the compare register (even though it won't matter if set to zero)
-												// not-ed becuase we are generating an inverted waveform
-				
+												// not-ed becuase we are generating an inverted waveform				
 	if (b==0)	{	// Off
 		
-		TCCR0A &= ~ ( _BV( COM0A1  ) | _BV( COM0A0 ) );		// Normal port operation, OC0A disconnected
+		TCCR0A &= ~ ( _BV( COM0A1  ) | _BV( COM0A0 ) );		// Normal port operation, OC0A disconnected (happens to hold true for all modes)
 	
 	} else {
 		
@@ -470,7 +476,7 @@ void setRedLED( uint8_t b ) {
 	
 	if (b==0)	{	// Off
 		
-		TCCR0A &= ~ ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Normal port operation, OC0B disconnected
+		TCCR0A &= ~ ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Normal port operation, OC0B disconnected (happens to hold true for all modes)
 		
 	} else {
 		
@@ -486,14 +492,14 @@ void setRedLED( uint8_t b ) {
 // *Change in battery charger status lines
 // *Incoming bit on the power port
 
-EMPTY_INTERRUPT( PCINT0_vect );
+//EMPTY_INTERRUPT( PCINT0_vect );
 
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program. 
 	// TODO: Figure out how to just put an IRET in the vector table to save time and code space.
 
 
-EMPTY_INTERRUPT( PCINT1_vect );
+//EMPTY_INTERRUPT( PCINT1_vect );
 
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program.
@@ -536,9 +542,43 @@ ISR( PCINT1_vect ) {
 
 */
 
-#define DATA_STATE_IDLE		0
+// EEPROM layout
+uint8_t EEMEM eeprom_start_cookie	='J';			// Real data?
+uint8_t EEMEM eeprom_ver			=1;				// Block Version 
+uint8_t EEMEM eeprom_badisr_flag	=0;				// Ever seen a bad ISR?
+uint8_t EEMEM eeprom_badisrs_flag	=0;				// Seen more than one bad ISR?
+uint8_t EEMEM eeprom_end_cookie		='L';			// Real data?
 
-uint8_t data_state=DATA_STATE_IDLE;	
+// Just in case we ever get a bad interrupt, best thing to do is flash LEDs a bit so it is not totally silent
+// and then RESET. Record the event in the EEPROM black box.
+
+// Naked is fine because the only place to go from here is RESET
+
+ISR( BADISR_vect , ISR_NAKED ) {
+	
+	RED_LED_DDR |= _BV(RED_LED_BIT);
+	RED_LED_PORT|= _BV(RED_LED_BIT);
+	
+	WHITE_LED_DDR |= _BV(WHITE_LED_BIT);
+	WHITE_LED_PORT|= _BV(WHITE_LED_BIT);
+
+	// Interrupts are automatically disabled when we get here
+	
+	if ( !eeprom_read_byte( &eeprom_badisr_flag ) ) {			// Never seen this before?
+		
+		eeprom_write_byte( &eeprom_badisr_flag , 0x01 );
+		
+	} else if ( !eeprom_read_byte( &eeprom_badisrs_flag ) ) {	// Only seen once before?
+		
+		eeprom_write_byte( &eeprom_badisrs_flag , 0x01 );
+	}
+	
+			
+	wdt_enable( WDTO_250MS);		// Just long enough to see the LEDs flash
+	while(1);						// Wait for the inevitable
+	
+}
+
 
 // Note that the architecture here is a little unconventional. We are constantly resetting all the registers which might seem
 // wasteful, but this protects us from many glitches. We have plenty of CPU cycles to spare, and in this application
@@ -546,56 +586,86 @@ uint8_t data_state=DATA_STATE_IDLE;
 
 int main(void)
 {
+	MCUSR &= ~ _BV( WDRF );		// Just in case we are coming out of a Watchdog reset
+								// "In safety level 1, WDE is overridden by WDRF in MCUSR...."
+								// "This means that WDE is always set when WDRF is set."
+	
+	wdt_disable();		// Just in case the WDT somehow got enabled (or we committed WDT suicide to RESET), we need to kill it before it kills us.
 	
 	motorOff();			// Always turn the motor off right away on start up. This makes resistor R5 unnecessary.
-			
-	// Put code here for some testing and feedback on initial battery connection at the factory. 
 	
-	// Blink LEDs to verify successful power up and give opportunity for button test
-	
-	setupTimer0();			// Initialize the timer that also PWMs the LEDs
-		
-	// Blink red/white 50 times back and forth on startup 
-		
-	for(int i=0;i<50 && !BUTTON_STATE_DOWN() ;i++) {
-		
-		uint8_t j=0;
-		
-		do {
-			
-			setRedLED(j);
-			setWhiteLED(~j);
 
-			_delay_ms(1);
-			
-			j++;
-			
-			
-		} while ( j != 0);
+	
+
+	BUTTON_DDR &= ~_BV(BUTTON_BIT);		// Make sure pin is input mode
+	BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pull-up for button pin
 		
-		do {
-			
-			setRedLED(~j);
-			setWhiteLED(j);
-			
-			_delay_ms(1);
+	RED_LED_DDR |= _BV(RED_LED_BIT);
+	WHITE_LED_DDR |= _BV(WHITE_LED_BIT);
+	
+	
+	// Blink alternating LEDs to verify...
+	//		(1) verify successful power up
+	//		(2) quickly check that both LEDs work
+	//		(3) test button can go down (pushing button terminates)
+	
+		
+	for( int i=0; i< 100 && !BUTTON_STATE_DOWN(); i++) {
+		
+		WHITE_LED_PORT &= ~_BV(WHITE_LED_BIT);
+		RED_LED_PORT |= _BV(RED_LED_BIT);
+		
+		for(uint16_t k=0;k<10000 && !BUTTON_STATE_DOWN();k++);
+		
+		RED_LED_PORT &= ~_BV(RED_LED_BIT);
+		WHITE_LED_PORT |= _BV( WHITE_LED_BIT);
+		
+		for(uint16_t k=0;k<10000 && !BUTTON_STATE_DOWN();k++);
 						
-			j++;
-			
-		} while ( j != 0);
-							
 	}
 	
-		
+	
+	// Both LEDs stay on while the button is still depressed 
+	// (times out after 20 seconds)
+	
+	RED_LED_PORT |= _BV(RED_LED_BIT);
+	WHITE_LED_PORT |= _BV( WHITE_LED_BIT);
+	
+	for( uint16_t i=0; i<20000 && BUTTON_STATE_DOWN(); i++ ) {		
+		_delay_ms(1);
+	}
+	
+	// Signal startup with a quick double LED ramp up/down...
+			
+	// TODO: Put code here for some testing and feedback on initial battery connection at the factory. 
+	
+	enableTimer0();			// Initialize the timer that also PWMs the LEDs
+				
+	for( uint8_t j=0; j<255;j++ ) {			
+		setRedLED(j);
+		setWhiteLED(j);
+		_delay_ms(1);
+	}
+	
+	for( uint8_t j=0; j<255;j++ ) {		
+		setRedLED(~j);
+		setWhiteLED(~j);
+		_delay_ms(1);
+	}
+	
+	
+	// Ready to begin normal operation!
+							
+			
 	while (1)	{	// Master loop. We pass though here every time we wake from sleep or power up. 
 			
 		motorOff();			// Turn the motor off again just in case there was a glitch. 
 		
-		setRedLED(0);		// LEDs off and in input state (they should be held low by the diodes (LEDs) to ground
-		setWhiteLED(0);		// If we left them in OUTPUT mode, then the Timer could potentially leave them on. 
+		// TODO: ? disableTimer0();	// Should automatically get turned off durring sleep, but justto be safe
 				
-		setupTimer0();			// Initialize the 1kHz timer that also PWMs the LEDs
-		
+		setRedLED(0);		// LEDs off 
+		setWhiteLED(0);		
+								
 		// Now get everything set up to wake us when necessary
 		
 		// Button setup
@@ -745,7 +815,8 @@ int main(void)
 		
 													
 		uint8_t ticks=0;							// monotonically increments on each pass tough main even loop from 0 to 255 and then resets. 
-		
+				
+		enableTimer0();				// Initialize the 1kHz timer that also PWMs the LEDs
 						
 		do {						// Everything in here is our normal ON operation loop
 									// Note that we don't even bother to goto sleep while we are on because the power
