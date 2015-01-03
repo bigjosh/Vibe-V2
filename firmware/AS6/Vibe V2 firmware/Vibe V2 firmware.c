@@ -492,14 +492,14 @@ void setRedLED( uint8_t b ) {
 // *Change in battery charger status lines
 // *Incoming bit on the power port
 
-//EMPTY_INTERRUPT( PCINT0_vect );
+EMPTY_INTERRUPT( PCINT0_vect );
 
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program. 
 	// TODO: Figure out how to just put an IRET in the vector table to save time and code space.
 
 
-//EMPTY_INTERRUPT( PCINT1_vect );
+EMPTY_INTERRUPT( PCINT1_vect );
 
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program.
@@ -624,35 +624,28 @@ int main(void)
 						
 	}
 	
-	
-	// Both LEDs stay on while the button is still depressed 
-	// (times out after 20 seconds)
-	
-	RED_LED_PORT |= _BV(RED_LED_BIT);
-	WHITE_LED_PORT |= _BV( WHITE_LED_BIT);
-	
-	for( uint16_t i=0; i<20000 && BUTTON_STATE_DOWN(); i++ ) {		
-		_delay_ms(1);
-	}
-	
-	// Signal startup with a quick double LED ramp up/down...
-			
-	// TODO: Put code here for some testing and feedback on initial battery connection at the factory. 
+
+	// Both LEDs pulse on while the button is still depressed
 	
 	enableTimer0();			// Initialize the timer that also PWMs the LEDs
-				
-	for( uint8_t j=0; j<255;j++ ) {			
-		setRedLED(j);
-		setWhiteLED(j);
-		_delay_ms(1);
+			
+	// (times out after 20 seconds)
+	
+	// Ramp both LEDs down slowly if button still pressed
+		
+	for( int i=0; i< 100 && BUTTON_STATE_DOWN(); i++) {
+		
+			for( uint8_t j=0; j<255 && BUTTON_STATE_DOWN() ;j++ ) {
+				setRedLED(~j);
+				setWhiteLED(~j);
+				_delay_ms(1);
+			}
+			
 	}
 	
-	for( uint8_t j=0; j<255;j++ ) {		
-		setRedLED(~j);
-		setWhiteLED(~j);
-		_delay_ms(1);
-	}
-	
+			
+	// TODO: Put more code here for some testing and feedback on initial battery connection at the factory. 
+					
 	
 	// Ready to begin normal operation!
 							
