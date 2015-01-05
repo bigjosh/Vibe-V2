@@ -109,7 +109,7 @@
 // (Compiles down to a single SBIC instruction)
 #define CIP_STATE_ACTIVE()		((CIP_PIN & _BV(CIP_BIT))==0)
 
-#define DEBOUNCE_TIME_MS 15					// How long to wait for a button press debounce
+#define DEBOUNCE_TIME_MS 25					// How long to wait for a button press debounce
 
 #define BUTTON_LONG_PRESS_MS 250			// How long to hold down button to be considered a long press rather than a push
 											// Note that a long press is always preceded by a push
@@ -413,9 +413,14 @@ void enableTimer0() {
 	OCR0A = 0;		// Start with LEDs off
 	OCR0B = 0;	
 	
-//	TIMSK0 = _BV(TOIE0);		// Enable interrupt on overflow (about 1kHz)
+//	TIMSK0 = _BV(TOIE0);		// Enable interrupt on overflow
 		
 }
+
+
+// TODO: user timer0 overflow interrupt for timing 
+//EMPTY_INTERRUPT( TIM0_OVF_vect );
+
 
 void disableTimer0() {
 
@@ -423,6 +428,8 @@ void disableTimer0() {
 	TIMSK0 = 0;			// No interrupts from anywhere!
 	
 }
+
+
 
 /*
 // Called when the button is pressed
@@ -487,6 +494,9 @@ void setRedLED( uint8_t b ) {
 }
 
 
+#define REBOOT() 	{wdt_enable( WDTO_250MS); while(1);}		// Timeout is long enough to see the LEDs flash, then wait for the inevitable
+
+
 // Dummy ISRs for the pin change interrupts.
 // These will catch and wake on..
 // *Change in battery charger status lines
@@ -511,7 +521,7 @@ EMPTY_INTERRUPT( PCINT1_vect );
 // It can only set the volatile button down state flag. It is reset by the foreground code
 // This is probably overkill in this application, but keeps everything very well defined
 
-// Note that there is STILL a tiny race condition if the button state only changes for an ammount of time shorter than it takes for the interrupt
+// Note that there is STILL a tiny race condition if the button state only changes for an amount of time shorter than it takes for the interrupt
 // to get called and then check the state of the button bit. As far as I can tell from the data sheet, there is no way to see *which* pin triggered a 
 // pin change interrupt, so I do not think it is possible to get rid of this race- although it is extremely unlikely (button push for less than 10us?)
 
@@ -543,6 +553,7 @@ ISR( PCINT1_vect ) {
 */
 
 // EEPROM layout
+
 uint8_t EEMEM eeprom_start_cookie	='J';			// Real data?
 uint8_t EEMEM eeprom_ver			=1;				// Block Version 
 uint8_t EEMEM eeprom_badisr_flag	=0;				// Ever seen a bad ISR?
@@ -573,12 +584,9 @@ ISR( BADISR_vect , ISR_NAKED ) {
 		eeprom_write_byte( &eeprom_badisrs_flag , 0x01 );
 	}
 	
-			
-	wdt_enable( WDTO_250MS);		// Just long enough to see the LEDs flash
-	while(1);						// Wait for the inevitable
+	REBOOT();	
 	
 }
-
 
 // Note that the architecture here is a little unconventional. We are constantly resetting all the registers which might seem
 // wasteful, but this protects us from many glitches. We have plenty of CPU cycles to spare, and in this application
@@ -594,17 +602,13 @@ int main(void)
 	
 	motorOff();			// Always turn the motor off right away on start up. This makes resistor R5 unnecessary.
 	
-
-	
-
 	BUTTON_DDR &= ~_BV(BUTTON_BIT);		// Make sure pin is input mode
 	BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pull-up for button pin
 		
 	RED_LED_DDR |= _BV(RED_LED_BIT);
 	WHITE_LED_DDR |= _BV(WHITE_LED_BIT);
-	
-	
-	// Blink alternating LEDs to verify...
+		
+	// Blink alternating LEDs at 10Hz to verify...
 	//		(1) verify successful power up
 	//		(2) quickly check that both LEDs work
 	//		(3) test button can go down (pushing button terminates)
@@ -615,16 +619,19 @@ int main(void)
 		WHITE_LED_PORT &= ~_BV(WHITE_LED_BIT);
 		RED_LED_PORT |= _BV(RED_LED_BIT);
 		
-		for(uint16_t k=0;k<10000 && !BUTTON_STATE_DOWN();k++);
+		for(uint8_t k=0;k<100 && !BUTTON_STATE_DOWN();k++) {
+			_delay_ms(1);
+		};
 		
 		RED_LED_PORT &= ~_BV(RED_LED_BIT);
 		WHITE_LED_PORT |= _BV( WHITE_LED_BIT);
 		
-		for(uint16_t k=0;k<10000 && !BUTTON_STATE_DOWN();k++);
+		for(uint8_t k=0;k<100 && !BUTTON_STATE_DOWN();k++) {
+			_delay_ms(1);
+		};
 						
 	}
 	
-
 	// Both LEDs pulse on while the button is still depressed
 	
 	enableTimer0();			// Initialize the timer that also PWMs the LEDs
@@ -645,9 +652,11 @@ int main(void)
 	
 			
 	// TODO: Put more code here for some testing and feedback on initial battery connection at the factory. 
-					
-	
+						
 	// Ready to begin normal operation!
+	
+	uint8_t buttonStuckFlag = 0;		// Set if the button is held down for a long time
+										// Disables the pull-up on the button to save power. 
 							
 			
 	while (1)	{	// Master loop. We pass though here every time we wake from sleep or power up. 
@@ -661,19 +670,12 @@ int main(void)
 								
 		// Now get everything set up to wake us when necessary
 		
-		// Button setup
-				
-		BUTTON_DDR &= ~_BV(BUTTON_BIT);		// Make sure pin is input mode
-		BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pull-up for button pin
 		
 		// Jack data setup
 		
-		JACK_DDR &= ~_BV(JACK_BIT);			// Jack is input to detect a connected slave
-		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power											// To the connected slave until it can wake up.									
-		
-		// LED setup
-				
-				
+//		JACK_DDR &= ~_BV(JACK_BIT);			// Jack is input to detect a connected slave
+//		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power											// To the connected slave until it can wake up.									
+						
 		// Battery Charger status pin setup
 				
 		EOC_DDR  &= ~_BV(EOC_BIT);				// Make sure input mode
@@ -691,36 +693,17 @@ int main(void)
 									
 		PCMSK0 |= _BV(EOC_INT);					// Enable interrupt on change in state-of-charge pin
 		PCMSK0 |= _BV(CIP_INT);					// Enable interrupt on change in end-of-charge pin
-		PCMSK1 |= _BV(BUTTON_INT);				// Enable interrupt on button pin so we wake on a press
-		PCMSK1 |= _BV(BUTTON_INT);				// Enable interrupt on jack input so we wake on a slave connection request
-				
-		GIFR = _BV(PCIF1) | _BV(PCIF0);			// Clear pending interrupt flags. This way we will only get an interrupt if something changes
-												// after we read it. There is a race condition where something could change between the flag clear and the
-												// reads below, so code should be able to deal with possible redundant interrupt and worst case
-												// is that we get woken up an extra time.
-
-
-		/*
 		
-		TODO: Disable pullup when button is stuck
 
-		if (BUTTON_STATE_DOWN()) {					// If the button is already down on power-up or before sleeping, then assume it is
-													// stuck down, so...
+		// Button setup
+		
+		BUTTON_DDR &= ~_BV(BUTTON_BIT);		// Make sure pin is input mode
+		
+		// Disable button pullup when button is stuck to keep from killing battery
+
+		if (buttonStuckFlag) {							
 				
 			BUTTON_PORT &= ~_BV(BUTTON_BIT);		// disable the pullup resistor to keep from running the battery dead
-				
-			// Signal a stuck button condition by flashing the LEDs back and forth for 10 seconds
-				
-			for(uint8_t i=0;i<100;i++) {
-					
-				setRedLED(1);
-				setWhiteLED(0);
-				_delay_ms(100);
-				setRedLED(0);
-				setWhiteLED(1);
-				_delay_ms(100);
-					
-			}
 				
 				
 			PCMSK1 &= ~_BV(BUTTON_INT);		// Disable interrupt on button pin.
@@ -739,21 +722,33 @@ int main(void)
 			
 		} else {	// Button is up like it should be (not stuck), so let a button press wake us!
 				
-				
+
+			BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pullup
+			PCMSK1 |= _BV(BUTTON_INT);				// Enable interrupt on button pin so we wake on a press
+						
 		}
 
 
-		*/										
+		// TODO: For now we will not wake on a jack data connect
+		//		PCMSK1 |= _BV(JACK_INT);				// Enable interrupt on jack input so we wake on a slave connection request
+		
+		GIFR = _BV(PCIF1) | _BV(PCIF0);			
+		
+		// Clear pending interrupt flags. This way we will only get an interrupt if something changes
+		// after we read it. There is a race condition where something could change between the flag clear and the
+		// reads below, so code should be able to deal with possible redundant interrupt and worst case
+		// is that we get woken up an extra time.
+
+										
 		
 		// Any reason to stay awake? If any of these are set now, then skip going to sleep since the interrupt will only happen on changes
 		
-		if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE() && !BUTTON_STATE_DOWN() && !JACK_STATE_LOW()  ) {
+		if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE() && (buttonStuckFlag || !BUTTON_STATE_DOWN()) /* && !JACK_STATE_LOW() */ ) {
 						
 			// Ok, it is bedtime!			
 		
 			GIMSK |= _BV(PCIE1) | _BV(PCIE0);		// Enable both pin change interrupt vectors (each individual pin was also be enabled above)
-		
-		
+				
 			set_sleep_mode( SLEEP_MODE_PWR_DOWN );  // Go into deep sleep where only a pin change can wake us.. uses only ~0.1uA!
 		
 			// GOOD NIGHT!
@@ -768,6 +763,13 @@ int main(void)
 			sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer’s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
 			cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)						
 						
+		}
+		
+		if (buttonStuckFlag) {
+		
+			buttonStuckFlag=0;		// Optimistically assume it was fixed.  It will timeout again if still stuck.
+			
+			BUTTON_PORT |= _BV(BUTTON_BIT);		// re-Enable pullup					
 		}
 		
 		// Ok, we are now turned on and ready for whatever action comes (came?) our way!
@@ -786,10 +788,10 @@ int main(void)
 				
 		uint16_t redLedCountdown=0;					// If non-zero, then the LED is on and will stay on for this many ms
 		
-		typedef enum { OFF, ERROR_BLINK, CHARGE_BLINK, ON } whiteLEDStates ;
-		whiteLEDStates whiteLEDState=OFF;			// White LED used for charger status
+		typedef enum { WHITELED_OFF, WHITELED_BLINK, WHITELED_BREATH, WHITELED_ON } whiteLEDStates ;
+		whiteLEDStates whiteLEDState=WHITELED_OFF;			// White LED used for charger status
 		
-
+/*
 		// State info for reading data from the power jack
 
 		typedef enum { 
@@ -802,14 +804,14 @@ int main(void)
 		JackDataStates jackDataState = JACK_IDLE;			
 		uint8_t databyte;										
 				
-				
+*/				
 		// Motor speed
 		uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
 		
 													
 		uint8_t ticks=0;							// monotonically increments on each pass tough main even loop from 0 to 255 and then resets. 
 				
-		enableTimer0();				// Initialize the 1kHz timer that also PWMs the LEDs
+		enableTimer0();				// Initialize the 488Hz timer that also PWMs the LEDs
 						
 		do {						// Everything in here is our normal ON operation loop
 									// Note that we don't even bother to goto sleep while we are on because the power
@@ -819,34 +821,40 @@ int main(void)
 									// A consequence of this strategy is that a button press must be at least 1ms long to be reliably detected									
 									// Typical buttons bounce for at least 10ms, so this should not be a problem here.
 																																				
-			uint8_t newButtonStateDown	= BUTTON_STATE_DOWN();		// Read actual button position		
-			uint8_t newEOCState			= EOC_STATE_ACTIVE();		// Read actual end-of-charge state
-			uint8_t newCIPState			= CIP_STATE_ACTIVE();		// Read actual charge-in-progress state
+			uint8_t buttonStateDown		= BUTTON_STATE_DOWN();			// Read actual button position		
+			uint8_t EOCState			= EOC_STATE_ACTIVE();		// Read actual end-of-charge state
+			uint8_t CIPState			= CIP_STATE_ACTIVE();		// Read actual charge-in-progress state
 			
 			
-			if ( newButtonStateDown )	{	// Button currently pressed?
+			// First process any button changes, step the motor speed if new button press
+			
+			if ( buttonStateDown )	{	// Button currently pressed?
 								
 				if (buttonUpCountdown==0) {			// Is this a new press event?
 					
-						// Button just pushed
-																		
-						currentSpeedStep++;			// Update to next speed setting
-												
-											
-				} else {							
-												
-						// Button held down
+					// Button just pushed
+					
+					currentSpeedStep++;			// Update to next speed setting
+															
+				} else {
+					
+					// Button held down
+					
+					buttonDownCountup++;
+					
+					if (buttonDownCountup>=LOOPS_PER_MS(BUTTON_LONG_PRESS_MS)) {
 						
-						buttonDownCountup++;
+						// Long press triggered
 						
-						if (buttonDownCountup>=LOOPS_PER_MS(BUTTON_LONG_PRESS_MS)) {
+						currentSpeedStep = 0;		// Turn off motor, which will also put us to sleep when the button is debounced
+												
+						if (buttonDownCountup >= LOOPS_PER_MS( BUTTON_STUCK_TIMEOUT_MS )) {
 							
-								// Long press triggered
-								
-								currentSpeedStep = 0;		// Turn off motor, which will also put us to sleep when the button is debounced
-								
+							buttonStuckFlag = 1;
+							
 						}
-						
+					}
+					
 				}
 				
 				
@@ -856,21 +864,46 @@ int main(void)
 			} else {		// Button currently up
 				
 				buttonDownCountup=0;		// not being held down any more, so reset timer
-							
+				
 				if (buttonUpCountdown) buttonUpCountdown--;
 				
 			}
-									
-									
+			
+
+
 			if (currentSpeedStep>=SPEED_STEP_COUNT) {		// Fail safe overflow compare
-					
+				
 				// We cycled though all motor steps (or currentSpeedStep glitched), so time to turn off
-					
+				
 				currentSpeedStep=0;
 				
-			}
-									
+			}			
 			
+			
+			whiteLEDState = WHITELED_OFF;		 // Start with white off...	
+			
+									
+			// Charger is attached?
+
+			if (CIPState || EOCState) {		// Is the charger connected?
+				
+				currentSpeedStep=0;					// Always turn motor off when charger connected (1) for safety, (2) so motor current doesn't interfere with charger sensing the end of charge on the battery
+
+				if (CIPState && EOCState)	{	// Both charging and end of charge?	This is an error state that according to the datatasheet indicates "System Test Mode". We should really never see this.
+					
+					whiteLEDState=WHITELED_BLINK;
+					
+					} else if (CIPState) {			// Charge currently in progress
+					
+					whiteLEDState=WHITELED_BREATH;
+					
+					} else {							// End of charge
+					
+					whiteLEDState=WHITELED_ON;
+				}								
+							
+			} 				
+				
 			uint8_t vccx10 = readVccVoltage();				// Capture the current power supply voltage. This takes ~1ms and will be needed multiple times below
 			
 			
@@ -878,37 +911,9 @@ int main(void)
 				
 				currentSpeedStep=0;												// Turn off motor
 				redLedCountdown = LOOPS_PER_MS(LOW_BATTERY_LED_ONTIME_MS);		// Blink red LED
-								
-			}
-											
-			
-			if (newCIPState || newEOCState) {		// Is the charger connected?
 				
-				currentSpeedStep=0;					// Always turn motor off when charger connected (1) for safety, (2) so motor current doesn't interfere with charger sensing the end of charge on the battery
-				
-				
-				if (newCIPState && newEOCState)	{	// Both charging and end of charge?	This is an error state that according to the datatasheet indicates "System Test Mode". We should really never see this.
-					
-					whiteLEDState=ERROR_BLINK;
-					
-				} else if (newCIPState) {			// Charge currently in progress
-					
-					whiteLEDState=CHARGE_BLINK;					
-					
-				} else {							// End of charge
-					
-					whiteLEDState=ON;
-					
-				}
-				
-				
-			} else {
-				
-				whiteLEDState=OFF;
-			}
-			
-
-				
+			}				
+																															
 				
 			// Ok, set outputs	(motor and LEDs)
 					
@@ -923,50 +928,58 @@ int main(void)
 			
 			}
 			
-			
 					
+								
 			switch (whiteLEDState) {
 				
-				case OFF:
+				case WHITELED_OFF:		
 				
-				
-				
-							// just for testing so I can see if they work without a motor!
-			
-							// TODO: Remove
-			
-							if (BUTTON_STATE_DOWN()) {
-																
-								setWhiteLED( ticks & 0xff );
-								
-							} else {
-								
-								setWhiteLED(0);
+							// If we are not using the WHITE led for charge indication, then
+							// Check if there was a recent button press so we can give use feedback
 							
-							}
-				
-				
-				
-//							setWhiteLED(0);
-							break;
-				
-				case ON:
-							setWhiteLED(1);
-							break;
-				
-				case CHARGE_BLINK:					// A slow, even blink
-				
-							if (ticks & 0b01000000) {	// On 1/2 the time with a slow period 
-								setWhiteLED(1);								
+							if (buttonUpCountdown)	{		// There was a recent button push
+								
+								// Flash the white LED on button press and then fade out on release
+								
+								if (buttonUpCountdown>=64) {		// Max brightness 64 to keep it classy
+									
+									setWhiteLED(64);
+									
+								} else {
+								
+									setWhiteLED(buttonUpCountdown);
+									
+								} 
 							} else {
+												
 								setWhiteLED(0);
+								
 							}
 							break;
-
-				case ERROR_BLINK:					// A quick blink
+							
 				
-							if ((ticks & 0b00111111) <= 0b00000100) {								
-								setWhiteLED(1);
+				case WHITELED_ON:
+							setWhiteLED(255);
+							break;
+				
+				case WHITELED_BREATH:					// A slow, even breathing
+				
+							if (ticks < 128)	{		// Breath up
+								
+								setWhiteLED(ticks);
+								
+							} else {					// Breath down
+								
+								setWhiteLED( ~ticks );
+								
+							}
+				
+							break;
+							
+				case WHITELED_BLINK:					// A quick blink
+				
+							if (ticks & 0b00010000) {								
+								setWhiteLED(255);
 							} else {
 								setWhiteLED(0);
 							}
@@ -987,7 +1000,7 @@ int main(void)
 			
 			if (redLedCountdown>1) {
 				
-				setRedLED(1);				
+				setRedLED(255);				
 				redLedCountdown--;
 				
 			} else {
@@ -997,11 +1010,9 @@ int main(void)
 			}
 			
 			ticks++;				// uint8 so will wrap at 0xff back to 0
-			
-			
-			
+								
 						
-		} while ( (currentSpeedStep || buttonUpCountdown>0 || redLedCountdown || (whiteLEDState!=OFF) ) && (buttonDownCountup<=LOOPS_PER_MS(BUTTON_STUCK_TIMEOUT_MS)) );
+		} while ( (currentSpeedStep || buttonUpCountdown>0 || redLedCountdown || (whiteLEDState!=WHITELED_OFF) ) && (!buttonStuckFlag) );
 		
 																// Stay on if...
 		
