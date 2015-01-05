@@ -33,12 +33,12 @@ Test Mode
 On initial power-up, the devices enters a test mode...
 
 1. LEDs alternate blinking red and white at about 10Hz. This lets you visually verify both LEDs are working. 
-  a. If you don't see anything on power-up, then either both LEDs are broken or there is some worse problem.
-  b. If you see a single LED blinking on and off at 10Hz, then the other LED is bad.
+  1. If you don't see anything on power-up, then either both LEDs are broken or there is some worse problem.
+  2. If you see a single LED blinking on and off at 10Hz, then the other LED is bad.
 
-2) The red and while LEDs simultainiously pulse at about 10Hz for as long as you hold down the button. The LEDs should go out when you release the button.
-  a. If both the LEDs continue to pulse after you release the button (or if you haven't even pushed it yet), the you probably have a stuck button. 
-  b. If only one LED pulses after you release the button, then you probably have a stuck button and a bad LED. 
+2. The red and while LEDs simultainiously pulse at about 10Hz for as long as you hold down the button. The LEDs should go out when you release the button.
+  1. If both the LEDs continue to pulse after you release the button (or if you haven't even pushed it yet), the you probably have a stuck button. 
+  2. If only one LED pulses after you release the button, then you probably have a stuck button and a bad LED. 
   
 Note that both above LED indications time out after about 30 seconds to avoid killing the battery. 
 
