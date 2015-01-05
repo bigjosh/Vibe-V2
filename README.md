@@ -42,6 +42,7 @@ On initial power-up, the devices enters a test mode...
 
 3. The red and while LEDs simultainiously pulse at about 10Hz for as long as you hold down the button. The LEDs should go out when you release the button.
   1. If both the LEDs continue to pulse after you release the button (or if you haven't even pushed it yet), then you probably have a stuck button. 
+  2. If the LEDs continue to alternate flash, then you probably have a bad button or bad connection from the board to the button. 
   
   
 Note that both above LED indications time out after about 30 seconds to avoid killing the battery. 
