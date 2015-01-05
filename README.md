@@ -47,6 +47,10 @@ On initial power-up, the devices enters a test mode...
   
 Note that both above LED indications time out after about 30 seconds to avoid killing the battery. 
 
+Stuck Button Defense
+--------------------
+To avoid damage to the battery, if the button is held down for more than about 10 continuous seconds then it is assumed to be stuck and the button is disabled. When this happens, the Vibe must be plugged into a charger to reset it. 
+
 Features
 --------
 * Current draw of <0.1uA when idle, so battery self drain is likely the limiting factor for maximum off time.
@@ -62,10 +66,6 @@ The specified motor is a vibration type nominally rated for 130mA at 3V.
 
 TODO
 ----
-* Would like to add special handling for the case where the button is stuck down- if say it is in a drawer with stuff piled on top. Right now, the CPU will goto sleep, but the pull-up resistor on the button will continue to draw about 1mA continuously until the battery is dead. Better to disconnect the resistor and require a power plug to wake up from that state. 
-
-* Smooth LED dimming using Timer0. Right now LEDs are on or off.
-
 * Power plug communication for setting up speeds and maybe reprogramming firmware.
 
 * Easter eggs!
