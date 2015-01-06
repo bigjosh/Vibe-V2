@@ -47,6 +47,13 @@ On initial power-up, the devices enters a test mode...
   
 Note that both above LED indications time out after about 30 seconds to avoid killing the battery. 
 
+Note that test mode only happens on initial power up. To re-enter test mode once the devices has been powered...
+
+1. unplug the battery
+2. push the button for a second or two to exhaust all the residual power from the capacitors
+3. reconnect the battery and test mode should start again
+ 
+
 Stuck Button Defense
 --------------------
 To avoid damage to the battery, if the button is held down for more than about 10 continuous seconds then it is assumed to be stuck and the button is disabled. When this happens, the Vibe must be plugged into a charger to reset it. 
