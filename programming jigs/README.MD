@@ -49,9 +49,10 @@ width="240" height="180" border="10" /></a>
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
 
-#USBTINY programmer 
+#USBTINY or USBASP programmer 
 
-The following instructions show how to setup and use the programming jig with a USBTINY style programmer (like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
+The following instructions show how to setup and use the programming jig with a USBTINY (like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
+or a USBASP (like the [RioRand USBASP](https://www.amazon.com/RioRand-Downloader-Programmer-ATMega8-Support/dp/B00N2FQ770/ref=as_sl_pc_ss_til?tag=joshcom-20&linkCode=w01&linkId=A2ZBKDCQCTFXGWQM&creativeASIN=B00N2FQ770))
 and a Windows 7/8 machine. 
 
 
@@ -68,12 +69,15 @@ Use
 ---
 1. The Pocket Programmer seems to be sensitive to static electricity and sometimes looses the USB connection 
 to the computer when you instert a new board. If you do loose the connection, you will get an 
-`Unable to connect to USBtiny` message. I've found that grounding yourself with a braclet to a real gorund (not the just ground pin on the programmer) while insterting soves this problem. Note that this does not seem to be a problem with other programmers like the ATMEL Dragon. 
+`Unable to connect` message. I've found that grounding yourself with a braclet to a real gorund (not the just ground pin on the programmer) while insterting soves this problem. Note that this does not seem to be a problem with other programmers like the ATMEL Dragon. 
 6. Connect a VIBE V2 board to the jig. Video showing the 10-pin backside jig is here...<br>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=tlA72ofPwDw" target="_blank"><img src="http://img.youtube.com/vi/tlA72ofPwDw/0.jpg" 
 width="240" height="180" border="10" /></a>
 4. Launch a Command Window in the directory with the firmware hex file and enter the following command..<br>
-`AVRDUDE -c usbtiny -p84 -U flash:w:vibe10-flash.hex -B 4`<br>
+For USBTINY:
+`AVRDUDE -c usbtiny -pt84 -U flash:w:vibe10-flash.hex -B 4`<br>
+For USBASP:
+`AVRDUDE -c usbasp -pt84 -U flash:w:vibe10-flash.hex -B 4`<br>
 Note that the `-U` and `-B` are case sensitive! 
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
