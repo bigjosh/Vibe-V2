@@ -94,7 +94,7 @@
 // Jack is normally pulled-up by internal resistor, but a slave device can momentarily 
 // pull it low to request a connection or send a 0 bit
 
-#define JACK_STATE_LOW() (( JACK_PIN & _BV(JACK_BIT))==0) 
+#define JACK_STATE_LOW() (!(JACK_PIN & _BV(JACK_BIT))) 
 
 // CIP is the charge-in-progress (battery full) signal. It s Active LOW.
 // It is connected to the STAT1 line from the battery controller
@@ -552,6 +552,94 @@ ISR( PCINT1_vect ) {
 
 */
 
+
+uint16_t jack_data =0;
+
+// Red data from the power jack
+// Called if jack is low
+
+void readJack() {
+	
+									
+	uint8_t		bits = 10;
+	uint16_t	bytes =  0;
+				
+	while (bits>0) {
+		
+
+		unsigned int bitTimeout = 3 * CYCLES_PER_MS;			// Wait at most 10 ms for next bit
+
+		while (!JACK_STATE_LOW()) {				// Wait for low at start of bit (will already be low when entering 1st time)
+			
+			bitTimeout--;
+			
+			if (bitTimeout==0) return;
+			
+		}
+
+								
+		while (JACK_STATE_LOW()) {				// Wait for rising pulse
+			
+			bitTimeout--;
+			
+			if (bitTimeout==0) return;
+			
+		}
+
+		_delay_ms(1);			// Wait for 1 ms before sampling data bit	
+		
+		bytes <<=1;
+				
+		if ( !JACK_STATE_LOW() ) {
+						
+			bytes |= 0x01;				// Put this bit at the bottom of the data byte we are building
+			
+		}
+		
+		bits--;
+				
+	}				
+	
+	
+	jack_data = bytes;
+	
+	
+	/*
+	
+	PORTA &= ~_BV(4);
+	_delay_us(100);
+	PORTA |= _BV(4);
+	_delay_us(100);			
+	PORTA &= ~_BV(4);
+	_delay_us(100);
+	
+						
+	
+	uint8_t mask = 0b10000000;
+	
+	for(int p=0; p<8;p++ ) {
+
+
+		if (jack_data & mask) {
+			PORTA |= _BV(4);
+		} else {			
+			PORTA &= ~_BV(4);			
+		}
+		
+		_delay_us(200);
+			
+		
+	}
+	
+	PORTA &= ~_BV(4);
+	
+	*/
+
+		
+	if (jack_data==0) setRedLED(128); else setRedLED(0);
+	
+}
+
 // EEPROM layout
 
 uint8_t EEMEM eeprom_start_cookie	='J';			// Real data?
@@ -673,8 +761,8 @@ int main(void)
 		
 		// Jack data setup
 		
-//		JACK_DDR &= ~_BV(JACK_BIT);			// Jack is input to detect a connected slave
-//		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power											// To the connected slave until it can wake up.									
+		JACK_DDR &= ~_BV(JACK_BIT);			// Jack is input 		
+		JACK_PORT &= ~_BV(JACK_BIT);		// Disable pull-up on jack just in case there is a drain (maybe from unplugged power supply?)
 						
 		// Battery Charger status pin setup
 				
@@ -737,9 +825,7 @@ int main(void)
 		// Clear pending interrupt flags. This way we will only get an interrupt if something changes
 		// after we read it. There is a race condition where something could change between the flag clear and the
 		// reads below, so code should be able to deal with possible redundant interrupt and worst case
-		// is that we get woken up an extra time.
-
-										
+		// is that we get woken up an extra time.										
 		
 		// Any reason to stay awake? If any of these are set now, then skip going to sleep since the interrupt will only happen on changes
 		
@@ -791,20 +877,12 @@ int main(void)
 		typedef enum { WHITELED_OFF, WHITELED_BLINK, WHITELED_BREATH, WHITELED_ON } whiteLEDStates ;
 		whiteLEDStates whiteLEDState=WHITELED_OFF;			// White LED used for charger status
 		
-/*
-		// State info for reading data from the power jack
-
-		typedef enum { 
-			JACK_IDLE,					// Waiting for start bit
-			JACK_START,					// Reading start bit
-			JACK_DATA,					// Reading data bits
-			JACK_ON 
-			} JackDataStates;		// Current state
-			
-		JackDataStates jackDataState = JACK_IDLE;			
-		uint8_t databyte;										
 				
-*/				
+		// Enable pull up on jack. This will provide (a tiny amount of) power											
+		// and let us detect a slave trying to communicate
+				
+		JACK_PORT |= _BV(JACK_BIT);			// Enable pull up on jack. This will provide (a tiny amount of) power											// To the connected slave until it can wake up.
+		
 		// Motor speed
 		uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
 		
@@ -812,6 +890,11 @@ int main(void)
 		uint8_t ticks=0;							// monotonically increments on each pass tough main even loop from 0 to 255 and then resets. 
 				
 		enableTimer0();				// Initialize the 488Hz timer that also PWMs the LEDs
+		
+		
+		DDRA |= _BV(4);				// Diagnostics on SCK 
+									// TODO: Get rid of this.
+		
 						
 		do {						// Everything in here is our normal ON operation loop
 									// Note that we don't even bother to goto sleep while we are on because the power
@@ -900,9 +983,11 @@ int main(void)
 					} else {							// End of charge
 					
 					whiteLEDState=WHITELED_ON;
-				}								
+				}								   
 							
 			} 				
+				
+			
 				
 			uint8_t vccx10 = readVccVoltage();				// Capture the current power supply voltage. This takes ~1ms and will be needed multiple times below
 			
@@ -912,8 +997,8 @@ int main(void)
 				currentSpeedStep=0;												// Turn off motor
 				redLedCountdown = LOOPS_PER_MS(LOW_BATTERY_LED_ONTIME_MS);		// Blink red LED
 				
-			}				
-																															
+			}
+																																		
 				
 			// Ok, set outputs	(motor and LEDs)
 					
@@ -924,12 +1009,24 @@ int main(void)
 				
 			} else {
 								
-				updateMotor( speedSteps[currentSpeedStep].top , speedSteps[currentSpeedStep].normailzedDuty, vccx10);		// Set new motor speed
-			
+				updateMotor( speedSteps[currentSpeedStep].top , speedSteps[currentSpeedStep].normailzedDuty, vccx10);		// Set new motor speed			
 			}
 			
-					
-								
+			// Next check for a request on the data jack....
+
+
+			PINA |= _BV(4);
+			
+			if (JACK_STATE_LOW()) {
+				
+				readJack();
+
+			}
+			
+			//PORTA &= ~_BV(4);
+			
+			
+			
 			switch (whiteLEDState) {
 				
 				case WHITELED_OFF:		
@@ -997,7 +1094,7 @@ int main(void)
 			}
 			
 					
-			
+			/*
 			if (redLedCountdown>1) {
 				
 				setRedLED(255);				
@@ -1008,7 +1105,7 @@ int main(void)
 				setRedLED(0);
 				redLedCountdown=0;
 			}
-			
+			*/
 			ticks++;				// uint8 so will wrap at 0xff back to 0
 								
 						
