@@ -1,7 +1,7 @@
 The Calibration Controller helps you find precice values for the VIBE's speed settings. It connects to a specially outfited VIBE device though the power jack so 
 settings can be tested interactively under real use conditions. 
 
-<img src="/DSC08125.JPG">
+<img src="/Calibration Controller/DSC08125.JPG">
 
 #Theory of Operation
 
