@@ -1,6 +1,7 @@
 The Calibration Controller helps you find precice values for the VIBE's speed settings. It connects to a specially outfited VIBE device though the power jack so 
 settings can be tested interactively under real use conditions. 
 
+
 #Theory of Operation
 
 Each speed setting on the VIBE has two parameters – the DUTY and the TOP. 
