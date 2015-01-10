@@ -19,10 +19,11 @@ You can then use the Remote to update the settings for the currently selected sp
 
 For reference, the current values are…
 
-Speed	DUTY	TOP
-1	3136	8191
-2	11264	8191
-3	24640	8191
+|Speed|DUTY|TOP|
+|-|-|-|
+|1|3136|8191|
+|2|11264|8191|
+|3|24640|8191|
 
 Once you find values that you like for a given speed, write down the two numbers since once you switch to another speed or unplug the Remote, there is no easy way to get them back. 
 
