@@ -36,31 +36,29 @@ On initial power-up, the devices enters a test mode...
   1. If you don't see anything on power-up, then either both LEDs are broken or there is some worse problem.
   2. If you see a single LED blinking on and off at 10Hz, then the other LED is bad.
   3. If you see both LEDs pulsing simultainiously, then the button is stuck or shortted. 
-  4. If you only seeone LED pulsing, then you probably have a stuck button *and* a bad LED. 
+  4. If you only see one LED pulsing, then you probably have a stuck button *and* a bad LED. 
 
 2. Press the button. 
 
 3. The red and while LEDs simultainiously pulse at about 10Hz for as long as you hold down the button. The LEDs should go out when you release the button.
-  1. If both the LEDs continue to pulse after you release the button (or if you haven't even pushed it yet), then you probably have a stuck button. 
+  1. If both the LEDs continue to pulse after you release the button (or if you haven't even pushed it yet), then you probably have a stuck button.
   2. If the LEDs continue to alternate flash, then you probably have a bad button or bad connection from the board to the button. 
-  
-  
+
 Note that both above LED indications time out after about 30 seconds to avoid killing the battery. 
 
-Note that test mode only happens on initial power up. To re-enter test mode once the devices has been powered...
+Note that test mode only happens on initial power up. Becuase the board is very low power, it can continue to operate off the residual charge in the capacitor for a long time (days-months). Becuase of this, you must folow this proceedure to re-enter test mode once the device has been powered up (it is not enough just to remove the battery and replace it)... 
 
 1. unplug the battery
-2. push the button for a second or two to exhaust all the residual power from the capacitors
+2. push the button for a second to exhaust all the residual power from the capacitors
 3. reconnect the battery and test mode should start again
  
-
 Stuck Button Defense
 --------------------
 To avoid damage to the battery, if the button is held down for more than about 10 continuous seconds then it is assumed to be stuck and the button is disabled. When this happens, the Vibe must be plugged into a charger to reset it. 
 
 Features
 --------
-* Current draw of <0.1uA when idle, so battery self drain is likely the limiting factor for maximum off time.
+* Current draw of <0.1uA when idle, so battery self-drain is likely the limiting factor for maximum off time.
 * Motor slow-start limits maximum acceleration to %1 of full scale per millisecond. This reduces the power glitch on motor start and lowers physical wear and tear on motor. 
 * Zero latency button debounce.
 * Motor output power is scaled to battery power so motor speed stays constant though battery discharge (at least until there is not enough voltage left to maintain speed). 
@@ -70,6 +68,8 @@ Connections
 The specified battery is a 160mAh Polymer Li-ion. Verify the polarity on the connector because it is non-standard and reversed polarity will blow a protection diode. 
 
 The specified motor is a vibration type nominally rated for 130mA at 3V.
+
+Note that the battery polarity is swapped comared to normal! Follow the markings on the board (positive battery wire towards middle of the board).
 
 TODO
 ----
