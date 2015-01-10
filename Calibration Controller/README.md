@@ -20,7 +20,7 @@ You can then use the Remote to update the settings for the currently selected sp
 For reference, the current values are…
 
 |Speed|DUTY|TOP|
-|-|-|-|
+|----|----|----|
 |1|3136|8191|
 |2|11264|8191|
 |3|24640|8191|
