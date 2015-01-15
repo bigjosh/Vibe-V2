@@ -8,9 +8,14 @@ This test should be performed on boards after component assembly.
 ###Requires:
 1. Board
 3. A powered charging cable 
-4. A testing fixture and circuit as pictured below…
+4. A testing circuit as pictured below…
 
 <IMG SRC="images/Bat Charger Tester.PNG">
+
+Note that pin #1 on the battery connector is the one closest to the edge of the board. 
+
+**IMPORTANT**: The flyback diode test and the battery charger test can be performed on a single physical fixture, 
+but the two circuits must have independent power supplies and grounds!
 
 The device should be REJECTED if there is any deviation from the specified response. 
 
@@ -32,7 +37,15 @@ This test should be performed on boards after component assembly.
 
 ###Requires:
 1. Board 
-2. A testing fixture and circuit as pictured below…
+2. A testing circuit as pictured below…
+
+<IMG SRC="images/Flyback Testing Fixture.PNG">
+
+Note that pin #2 on the motor connector is the one closest to the edge of the board. 
+
+**IMPORTANT**: The flyback diode test and the battery charger test can be performed on a single physical fixture, 
+but the two circuits must have independent power supplies and grounds!
+
 
 The device should be REJECTED if there is any deviation from the specified response. 
 
