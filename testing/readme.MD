@@ -14,6 +14,8 @@ This test should be performed on boards after component assembly.
 
 Note that pin #1 on the battery connector is the one closest to the edge of the board. 
 
+Note that this circuit has a constant drain of about 8uA. Disconnect the battery if you plan on storing for longer than a few weeks. 
+
 **IMPORTANT**: The flyback diode test and the battery charger test can be performed on a single physical fixture, 
 but the two circuits must have independent power supplies and grounds!
 
