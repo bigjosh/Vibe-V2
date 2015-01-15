@@ -51,9 +51,9 @@ but the two circuits must have independent power supplies and grounds!
 
 The device should be REJECTED if there is any deviation from the specified response. 
 
-1. Connect testing fixture to the motor connector on the board. LED1 should NOT be lit. 
-3. Press button S1. LED1 should light. 
-3. Release S1 and remove board from fixture (order unimportant). 
+1. Connect testing fixture to the motor connector on the board. LED D1 should NOT be lit. 
+3. Press button S2. LED D1 should light. 
+3. Release S2 and remove board from fixture (order unimportant). 
 
 
 ##Operation and Connections Test 
