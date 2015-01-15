@@ -10,6 +10,8 @@ This test should be performed on boards after component assembly.
 3. A powered charging cable 
 4. A testing fixture and circuit as pictured below…
 
+<IMG SRC="images/Bat Charger Tester.PNG">
+
 The device should be REJECTED if there is any deviation from the specified response. 
 
 ###Steps:
