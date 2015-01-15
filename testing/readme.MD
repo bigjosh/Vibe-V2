@@ -24,7 +24,7 @@ The device should be REJECTED if there is any deviation from the specified respo
 ###Steps:
 1. Start with an unpowered board (no battery or charger cable connected).
 2. Press the button for a second to bleed any residual charge that might be in the capacitors. The red LED may flash for a split second.
-3. Connect the testing fixture to the battery connector on the board.   4. The LEDs should begin alternate flashing at about 10Hz when the power is connected. The alternate flashing will timeout in about 20 seconds, so be sure to complete the next step before that.
+3. Connect the testing fixture to the battery connector on the board. The LEDs should begin alternate flashing at about 10Hz when the power is connected. The alternate flashing will timeout in about 20 seconds, so be sure to complete the next step before that.
 5. Press the button. The LEDs should stop alternate flashing and the white LED should remain on solid for as long as you hold down the button. The white LED will timeout after about 20 seconds, so be sure to complete the next step before that. 
 6. Release the button. The white LED should go out.
 7. Connect the charging cable to the jack on the board. The LED should begin to pulse at about 1Hz indicating that it is charging the battery. If the white LED comes on solid, then it is possible the battery is already full, in which case you should try a different (less full) battery. 
