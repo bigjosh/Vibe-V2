@@ -11,12 +11,26 @@ There are several jig versions....
 
 
 6 pin front:
-![6 pin front](https://raw.githubusercontent.com/bigjosh/Vibe-V2/master/programming%20jigs/photos/DSC07862.JPG "6 pin front")
+![6 pin front](photos/DSC07862.JPG "6 pin front")
 
 10 pin back:
-![10 pin back](https://raw.githubusercontent.com/bigjosh/Vibe-V2/master/programming%20jigs/photos/DSC07900.JPG "10 pin back")
+![10 pin back](photos/DSC07900.JPG "10 pin back")
     
+
+There are also different versions for spear tio pins and conical pins becuase the pins have different diameters so need different sized holes. 
+
 These jigs are completely passive and only route the signals from the header to the test points on the board. 
+
+Jigs are assembled with 10-24 screws and nuts. 1 1/4" or 1 1/2" screws seem best. Adjust the nuts so that the pogo pins have to correct force against the bottom of the board.
+
+So far my favorate combination is conical pins with a layer 1 board on the top with plastic ramps and little cut peices of a credit card to act as landing pads for the motor and battery connectors. Here is what it looks like...
+
+![Conical with ramps - unloaded](photos/Conical%20ramp%20unloaded.JPG)
+![Conical with ramps - loaded](photos/Conical%20ramp%20loaded.JPG)
+
+Note that people who have need to do way more boards than me (1,000's at a time) prefer no ramps, alignment pins, and spear tip pogos. Note that alignment pins are just spear tips pins installed upside down. 
+
+![Spear with Alignment](photos/Spear%20with%20Alignment.JPG)
 
 Besides the jig, you will also need an AVR programmer capable a serial programing and supplying power to the target. 
 Almost any AVR programmer can meet the requirements. 
