@@ -26,8 +26,9 @@ The white LED is lit at about 50% brightness whenever the button is pushed for f
 The white LED also indicates charger status: 
 
 * Off means no charger connected
-* On solid full brightness means charger is connected and battery is fully recharged
+* On solid full brightness means charger is connected and battery is fully recharged (LED blinks for 62ms once every 8 seconds)
 * Slow pulse (1Hz) means charging
+
 
 Motor is always off while charger connected. Button state is ignored while the charger is connected.
 
