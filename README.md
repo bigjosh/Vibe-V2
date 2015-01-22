@@ -21,7 +21,7 @@ When battery gets low, the motor turns off and the red LED lights for about 1 se
 
 Because the battery has reduced voltage under load, there are different cutoff voltages for initial turn on and continuing operation. The battery must be at least 3.3 volts for the motor to start, but once started it will continue to run until the battery drops to 3.1 volts. 
 
-The white LED is lit at about 50% brightness whenever the button is pushed for feedback, at least until we go into stuck-button warning mode.
+For user feedback, the white LED is lit at about 50% brightness whenever the button is pushed, at least until we go into <a href="#stuck-button-defense"><i>stuck-button warning mode</i></a>.
 
 The white LED also indicates charger status: 
 
