@@ -21,7 +21,7 @@ When battery gets low, the motor turns off and the red LED lights for about 1 se
 
 Because the battery has reduced voltage under load, there are different cutoff voltages for initial turn on and continuing operation. The battery must be at least 3.3 volts for the motor to start, but once started it will continue to run until the battery drops to 3.1 volts. 
 
-The white LED is lit at about 50% brightness whenever the button is pushed for feedback.
+The white LED is lit at about 50% brightness whenever the button is pushed for feedback, at least until we go into stuck-button warning mode.
 
 The white LED also indicates charger status: 
 
@@ -55,7 +55,26 @@ Note that test mode only happens on initial power up. Because the board is very 
  
 Stuck Button Defense
 --------------------
-To avoid damage to the battery, if the button is held down for more than about 30 continuous seconds then it is assumed to be stuck (maybe becuase something is resting on top of the unit and pressing the button) and the button is disabled. When this happens, the Vibe must be plugged into a charger to reset it. 
+To avoid damage to the battery, the device will enter a <i>stuck-button lockout</i> if the button is held down for too long (maybe because something is resting on top of the unit and pressing the button). When this happens, the button is completely disabled and the Vibe must be plugged into a charger to reset it. 
+
+The <i>stuck button lockout</i> sequence goes like this...
+
+1. When the button is initially pressed, the white LED lights at 50% brightness. 
+2. If the button is held down for 250ms, then the motor is turned off if it was running. 
+3. If the button is held down for more than 8 seconds, then we go into <i>stuck-button warning mode</i>. In this mode, the white LED blinks at 50% brightness for 100ms each second. It looks like a heartbeat.
+4. If the button is held down for more than about 30 minutes once it enters <i>stuck-button warning mode</i>, then we go into <i>stuck-button lockout</i> and the button is disabled. 
+
+If the button is released anytime before the <i>stuck-button lockout</i>, then the white LED is turned off and we return to normal operation.
+
+If the button is pressed upon initial power-up, then the normal test mode red/white blinking is skipped (becuase this is typically terminated by a button press) and we just straight into <i>stuck-button warning mode</i>.
+
+|State|Indication|Timeout|
+|----|-------|---|
+|Normal press|Whilte LED 50% brightness, 100% duty|250ms|
+|Long press|Whilte LED 50% brightness, 100% duty|8 seconds|
+|Stuck-button warning mode|Whilte LED 50% brightness, 10% duty, 1Hz frequency|30 minutes|
+
+Note that <i>stuck-button warning mode</i> uses about 3mA, so it is possible that a button that repeatedly gets stuck for for less than 30 minutes at a time could eventually wear down the battery, but this seem unlikely since the first time it was stuck for more than 30 minutes, then it would lockout and require a connecttion to a charger to reset.
 
 Features
 --------
