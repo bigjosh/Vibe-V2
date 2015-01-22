@@ -71,8 +71,8 @@ The board should be REJECTED if there is any deviation from the specified respon
 1. Start with an unpowered board (no battery or charger cable connected).
 2. Press the button for a second to bleed any residual charge that might be in the capacitors. Either LED may flash for a split second.
 3. Plug the battery and motor into the connectors on the board. The motor may start for a split second. The LEDs should begin alternate flashing at about 10Hz. The alternate flashing will timeout in about 20 seconds, so be sure to complete the next step before that.
-5. Press the button. The LEDs should stop alternate flashing and the white LED should remain on solid for as long as you hold down the button. The white LED will timeout after about 20 seconds, so be sure to complete the next step before that.
-6. Release the button. The white LED should go out.
+5. Press the button. The LEDs should stop alternate flashing. The white LED should flash briefly about once per second until the button is released. remain on solid for as long as you hold down the button. The white LED flashing will timeout after about 30 minutes, so be sure to complete the next step before that.
+6. Release the button. The white LED should stop flashing. 
 7. Press and release the button. The white LED should light while the button is depressed and go off when released. The motor should come on at low speed. Note that for each of the following button presses, if you hold the button down for longer than about 0.5 seconds the motor will turn off. In this case, you can start the cycle over again. 
 8. Press and release the button. The white LED should come on while the button is down and turn off when released. The motor should switch to medium speed.
 9. Press and release the button. The white LED should come on while the button is down and turn off when released. The motor should switch to medium speed.
