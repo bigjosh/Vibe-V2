@@ -93,6 +93,9 @@
 
 #define BUTTON_LONG_PRESS_MS 500			// How long to hold down button to be considered a long press rather than a push
 											// Long press immediately turns off motor without needing to cycle though remaining speeds
+											
+											
+#define BUTTON_STUCK_TIMEOUT_S	(60*30)		// How long does the button need to be held down for to enter button lockout mode? (must fit into uint8_t)
 
 // Different cutoffs because the drain of the motor on the battery lowers the voltage, which will recover when the 
 // motor is turned off
@@ -456,6 +459,8 @@ int main(void)
 		
 	
 	if ( !watchDogResetFlag )		{		// Are we coming out of anything except for a WatchDog reset?
+		
+		// Cold boot, run test mode
 				
 		// Blink back and forth to show LEDs work and solicit a button press			
 			
@@ -495,24 +500,50 @@ int main(void)
 		// we are testing to make sure it goes back up 
 		
 		// Otherwise we just reset and the button was down when we woke, so likely it is stuck down 
-		// and that is what caused the reset. In this case, show the user and then disable the button.
+		// and that is what caused the reset. In this case, show the user and then eventually disable the button.
 		
-
-		// Turn on white LED to show button down
+		// Each pass of this loop takes ~1 sec.
 		
-		setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
-		
-		// Leave on for 20 seconds or until button pops back up
-		
-		for(uint16_t i=0; i<20000 && BUTTON_STATE_DOWN();i++) {
+		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
+			
+			
+			// To indicate that we are in a stuck-button sequence, we will blink the white LED
+			// at 50% brightness, 1Hz, 10% duty cycle. This looks different than other states 
+			// and also minimizes battery usage (the LED pulls 10+mA) since we might be doing this
+			// for many minutes
+			
+			// Start with LED off because it looks better when we are coming in from a watchdog
+			// reset because the button was held down for more than 8 secs. Otherwise user
+			// sees an odd blink pattern. 
+			
+			setWhiteLED(0);
+			
+			// Leave the white LED off for 900 ms or until the button goes up
+			
+			for( uint8_t l=0; l<90 && BUTTON_STATE_DOWN() ; l++) {
+				_delay_ms(10);
+			}
+			
 						
-			wdt_reset();
-			_delay_ms(1);
+			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
+			
+			// Leave the white LED on for 100 ms or until the button goes up
+			// Could do this as a single _delay_ms(100) but that might feel un-responsive
+			
+			
+			for( uint8_t l=0; l<10 && BUTTON_STATE_DOWN() ; l++) {
+				_delay_ms(10);
+			}
+					
+			wdt_reset();		
 			
 		}
-				
-		// LED off
+		
+		
+		// Turn off LED before continuing
 		setWhiteLED(0);
+				
+		// Debounce the possible button up transition 				
 		
 		_delay_ms(BUTTON_DEBOUNCE_TIME_MS);		
 		
@@ -585,6 +616,7 @@ int main(void)
 			motorOff();						//Turn motor off in case were running before plug went in
 			
 			setWhiteLED(255);				// White LED full on
+			
 			
 			_delay_ms( JACK_DEBOUNCE_TIME_MS );
 			
@@ -696,25 +728,30 @@ int main(void)
 				
 				if (buttonDownCount++ >= BUTTON_LONG_PRESS_MS ) {		// Long press? Shut motor off
 					
+					// The reboot would do both of these anyway, but we do them redundantly here so UI feels responsive- 
+					// The full reboot cycle takes 100+ ms. 
+					
 					motorOff();
 					
-					while (BUTTON_STATE_DOWN());	// Wait for button to go back up to avoid bounce after reboot
-					
-					// Note that after 8 seconds the watchdog will timeout
-					// and we will reboot anyway and then detect a stuck down button
-					
-					// Note that the reboot takes at least 250ms, effectively skipping the bouncing that could look like
-					// false button presses on the way back up
-					
+					while(BUTTON_STATE_DOWN());		// Wait for the button to be release or watchdog to timeout after 8 secs and reboot us
+																				
 					setWhiteLED(0);
-					
+										
 					REBOOT();
 					
+					// If the button is still down once we reboot, we will land in the stuck button detection sequence
+					// which will blink the LED for 1/10th second every second until either the button goes up
+					// or the Stuck button timeout expires
+					
+					// Note that REBOOT takes at least 60ms so will effectively debounce the button up event
+										
 				}
 				
 				_delay_ms(1);		// One loop=~1ms
 				
 			}
+			
+			// Button released, white LED off again
 			
 			setWhiteLED(0);
 						
