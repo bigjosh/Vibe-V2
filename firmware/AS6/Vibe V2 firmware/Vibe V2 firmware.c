@@ -95,7 +95,7 @@
 											// Long press immediately turns off motor without needing to cycle though remaining speeds
 											
 											
-#define BUTTON_STUCK_TIMEOUT_S	(60*30)		// How long does the button need to be held down for to enter button lockout mode? (must fit into uint8_t)
+#define BUTTON_STUCK_TIMEOUT_S	(60*2)		// How long does the button need to be held down for to enter button lockout mode? (must fit into uint8_t)
 
 // Different cutoffs because the drain of the motor on the battery lowers the voltage, which will recover when the 
 // motor is turned off
