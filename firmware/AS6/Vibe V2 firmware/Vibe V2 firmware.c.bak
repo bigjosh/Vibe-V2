@@ -95,7 +95,7 @@
 											// Long press immediately turns off motor without needing to cycle though remaining speeds
 											
 											
-#define BUTTON_STUCK_TIMEOUT_S	(60*30)		// How long does the button need to be held down for to enter button lockout mode? 
+#define BUTTON_STUCK_TIMEOUT_S	(60*2)		// How long does the button need to be held down for to enter button lockout mode? (must fit into uint8_t)
 
 // Different cutoffs because the drain of the motor on the battery lowers the voltage, which will recover when the 
 // motor is turned off
@@ -354,6 +354,7 @@ void enableTimer0() {
 	OCR0A = 0;		// Start with LEDs off
 	OCR0B = 0;	
 	
+//	TIMSK0 = _BV(TOIE0);		// Enable interrupt on overflow
 		
 }
 
@@ -361,7 +362,8 @@ void enableTimer0() {
 void disableTimer0() {
 
 	TCCR0B = 0;			// No clock, timer stopped. 
-		
+	TIMSK0 = 0;			// No interrupts from anywhere!
+	
 }
 
 
@@ -454,7 +456,8 @@ int main(void)
 	CIP_PORT |= _BV( CIP_BIT);				// Activate pull-up
 	
 	_delay_us(1);							// Give the pull-ups a second to work	
-			
+		
+	
 	if ( !watchDogResetFlag )		{		// Are we coming out of anything except for a WatchDog reset?
 		
 		// Cold boot, run test mode
@@ -578,30 +581,22 @@ int main(void)
 		// Ok, it is bedtime!
 												
 		set_sleep_mode( SLEEP_MODE_PWR_DOWN );  // Go into deep sleep where only a pin change can wake us.. uses only ~0.1uA!
-					
+			
 		// GOOD NIGHT!		
 		
-		// This code disables the Watchdog. Note that we can not use the library wdt_disable() becuase it has a bug
-		// that causes intermittent spurious resets.
-		
-		WDTCSR |= _BV(WDCE) | _BV(WDE);		// In the same operation, write a logic one to WDCE and WDE.
-		// Note we use OR to preserve the prescaler
-		
-		WDTCSR = 0;							//	Within the next four clock cycles, in the same operation, write the WDE and WDP bits
-		// as desired, but with the WDCE bit cleared.
-		
-		sleep_enable();							// "To enter any of the three sleep modes, the SE bit in MCUCR must be written to logic one and a SLEEP instruction must be executed."				
-		sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts."		
+		wdt_disable();							// Sleep soundly.
+		sleep_enable();							// "To enter any of the three sleep modes, the SE bit in MCUCR must be written to logic one and a SLEEP instruction must be executed."
+		sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts."
 		sleep_cpu();							// This must come right after the sei() to avoid race condition
-
+			
 		// GOOD MORNING!
 		// If we get here, then a button push or change in charger status woke s up....
 			
 		sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer’s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
-		
 		cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)
-				
+		
 		wdt_enable( WDTO_8S );			// Re-enable watchdog on wake Give ourselves 8 seconds before reboot
+					
 	}
 			
 	// Ok, now we are running!!!
@@ -778,3 +773,5 @@ int main(void)
 	}
 	
 }
+		
+
