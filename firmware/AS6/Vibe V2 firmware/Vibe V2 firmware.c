@@ -582,13 +582,15 @@ int main(void)
 		// GOOD NIGHT!		
 		
 		// This code disables the Watchdog. Note that we can not use the library wdt_disable() becuase it has a bug
-		// that causes intermittent spurious resets.
+		// that causes intermittent unwanted resets.
+		
+		// Note interrupts are already clear when we get here, otherwise we would need to worry about getting interrupted between the two following lines
 		
 		WDTCSR |= _BV(WDCE) | _BV(WDE);		// In the same operation, write a logic one to WDCE and WDE.
-		// Note we use OR to preserve the prescaler
+											// Note we use OR to preserve the prescaler
 		
 		WDTCSR = 0;							//	Within the next four clock cycles, in the same operation, write the WDE and WDP bits
-		// as desired, but with the WDCE bit cleared.
+											// as desired, but with the WDCE bit cleared.
 		
 		sleep_enable();							// "To enter any of the three sleep modes, the SE bit in MCUCR must be written to logic one and a SLEEP instruction must be executed."				
 		sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts."		
@@ -707,41 +709,30 @@ int main(void)
 		if (BUTTON_STATE_DOWN())	{		// Button pushed?
 			
 			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
-						
-			currentSpeedStep++;
-			
-			if (currentSpeedStep >= SPEED_STEP_COUNT )	{ // Cycled all the Way around?
-				
-				
-				currentSpeedStep=0;
-				
-			}
-			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
-			
-		}
-											
-		updateMotor( pgm_read_word(&speedSteps[currentSpeedStep].top) , pgm_read_word(&speedSteps[currentSpeedStep].normailzedDuty), vccx10);		// Set new motor speed
-		
-		if (buttonPressedFlag) {
 			
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);			// debounce going down...
+			
+			if ( currentSpeedStep ==0 ) {				// Special case first press turning on instantly
+				
+				updateMotor( pgm_read_word(&speedSteps[1].top) , pgm_read_word(&speedSteps[1].normailzedDuty), vccx10);		// Set new motor speed
 
+			}
+			
 			uint16_t buttonDownCount=0;
-						
-			while (BUTTON_STATE_DOWN()) {			// Wait for button to go back up 
+			
+			while (BUTTON_STATE_DOWN()) {			// Wait for button to go back up or longpress timeout
 				
 				if (buttonDownCount++ >= BUTTON_LONG_PRESS_MS ) {		// Long press? Shut motor off
 					
-					// The reboot would do both of these anyway, but we do them redundantly here so UI feels responsive- 
-					// The full reboot cycle takes 100+ ms. 
+					// The reboot would do both of these anyway, but we do them redundantly here so UI feels responsive-
+					// The full reboot cycle takes 100+ ms.
 					
 					motorOff();
 					
 					while(BUTTON_STATE_DOWN());		// Wait for the button to be release or watchdog to timeout after 8 secs and reboot us
-																				
+					
 					setWhiteLED(0);
-										
+					
 					REBOOT();
 					
 					// If the button is still down once we reboot, we will land in the stuck button detection sequence
@@ -749,12 +740,30 @@ int main(void)
 					// or the Stuck button timeout expires
 					
 					// Note that REBOOT takes at least 60ms so will effectively debounce the button up event
-										
+					
 				}
 				
 				_delay_ms(1);		// One loop=~1ms
 				
 			}
+			
+			// Pressed less than a long press
+			
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
+												
+			currentSpeedStep++;
+			
+			if (currentSpeedStep >= SPEED_STEP_COUNT )	{ // Cycled all the Way around?
+								
+				currentSpeedStep=0;
+				
+			}
+						
+		}
+											
+		updateMotor( pgm_read_word(&speedSteps[currentSpeedStep].top) , pgm_read_word(&speedSteps[currentSpeedStep].normailzedDuty), vccx10);		// Set new motor speed
+		
+		if (buttonPressedFlag) {
 			
 			// Button released, white LED off again
 			
