@@ -13,9 +13,9 @@ User Interface
 --------------
 Device is normally in a low-power off state.
 
-Each press of the button steps to the next speed setting. There are 3 speed settings (low, medium, high) and a 4th button press returns to off state.
+A long button press (~0.25 sec) goes straight to off state from any speed. 
 
-A long button press (~0.25 sec) goes straight to off state from any speed.
+A short button press steps to the next speed setting upon button release. There are 3 speed settings (low, medium, high) and a 4th button press returns to off state.
 
 When battery gets low, the motor turns off and the red LED lights for about 1 second. Subsequent button pushes blink the red LED again to indicate not enough power to turn on. Note that Litium Polymer batteries recover some voltage while resting, so it is possible to briefly turn the unit back on even after it has automatically turned off from low battery. Doing this repeatedly will lead to shorter and short on times until eventually the battery is too depleated to have any revcovery left.
 
