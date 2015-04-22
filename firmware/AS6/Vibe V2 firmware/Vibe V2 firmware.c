@@ -376,7 +376,7 @@ void setWhiteLED( uint8_t b ) {
 	
 	} else {
 		
-		b/=16;
+		b/=16;												// Account for missing current limiting resistor - empirically found
 		
 		OCR0A = ~b;											// Set the compare register	- double buffered so will update at next top	
 		TCCR0A |= ( _BV( COM0A1  ) | _BV( COM0A0 ) );		// Set OC0A on Compare Match, Clear OC0A at BOTTOM (inverting mode)
@@ -394,7 +394,7 @@ void setRedLED( uint8_t b ) {
 		
 	} else {
 		
-		b/=16;
+		b/=16;												// Account for missing current limiting resistor - empirically found
 		
 		OCR0B = ~b;											// Set the compare register	- double buffered so will update at next top	
 		TCCR0A |= ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Set OC0B on Compare Match, Clear OC0B at BOTTOM (inverting mode)
