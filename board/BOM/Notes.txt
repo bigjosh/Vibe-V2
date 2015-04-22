@@ -1,10 +1,5 @@
-All three files contain the same information in different formats. 
+These 3 files contain the same information in different formats. 
 
 A live version of the BOM is available at...
 
 https://docs.google.com/spreadsheets/d/1DJ4L0mpyu5pduNasJa129-OpFUWWm2bzT5Ja490cZhg/edit?usp=sharing
-
-This BOM is as available in Digikey's BOM manager here...
-
-https://www.digikey.com/classic/RegisteredUser/BOMBillOfMaterials.aspx?path=1&exist=1&id=2055056
-

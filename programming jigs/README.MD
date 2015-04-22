@@ -11,12 +11,26 @@ There are several jig versions....
 
 
 6 pin front:
-![6 pin front](https://raw.githubusercontent.com/bigjosh/Vibe-V2/master/programming%20jigs/photos/DSC07862.JPG "6 pin front")
+![6 pin front](photos/DSC07862.JPG "6 pin front")
 
 10 pin back:
-![10 pin back](https://raw.githubusercontent.com/bigjosh/Vibe-V2/master/programming%20jigs/photos/DSC07900.JPG "10 pin back")
+![10 pin back](photos/DSC07900.JPG "10 pin back")
     
+
+There are also different versions for spear tio pins and conical pins becuase the pins have different diameters so need different sized holes. 
+
 These jigs are completely passive and only route the signals from the header to the test points on the board. 
+
+Jigs are assembled with 10-24 screws and nuts. 1 1/4" or 1 1/2" screws seem best. Adjust the nuts so that the pogo pins have to correct force against the bottom of the board.
+
+So far my favorate combination is conical pins with a layer 1 board on the top with plastic ramps and little cut peices of a credit card to act as landing pads for the motor and battery connectors. Here is what it looks like...
+
+![Conical with ramps - unloaded](photos/Conical%20ramp%20unloaded.JPG)
+![Conical with ramps - loaded](photos/Conical%20ramp%20loaded.JPG)
+
+Note that people who have need to do way more boards than me (1,000's at a time) prefer no ramps, alignment pins, and spear tip pogos. Note that alignment pins are just spear tips pins installed upside down. 
+
+![Spear with Alignment](photos/Spear%20with%20Alignment.JPG)
 
 Besides the jig, you will also need an AVR programmer capable a serial programing and supplying power to the target. 
 Almost any AVR programmer can meet the requirements. 
@@ -49,9 +63,10 @@ width="240" height="180" border="10" /></a>
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
 
-#USBTINY programmer 
+#USBTINY or USBASP programmer 
 
-The following instructions show how to setup and use the programming jig with a USBTINY style programmer (like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
+The following instructions show how to setup and use the programming jig with a USBTINY (like the  [Sparkfun Pocket Programmer](https://www.sparkfun.com/products/9825)) 
+or a USBASP (like the [RioRand USBASP](https://www.amazon.com/RioRand-Downloader-Programmer-ATMega8-Support/dp/B00N2FQ770/ref=as_sl_pc_ss_til?tag=joshcom-20&linkCode=w01&linkId=A2ZBKDCQCTFXGWQM&creativeASIN=B00N2FQ770))
 and a Windows 7/8 machine. 
 
 
@@ -68,12 +83,15 @@ Use
 ---
 1. The Pocket Programmer seems to be sensitive to static electricity and sometimes looses the USB connection 
 to the computer when you instert a new board. If you do loose the connection, you will get an 
-`Unable to connect to USBtiny` message. I've found that grounding yourself with a braclet to a real gorund (not the just ground pin on the programmer) while insterting soves this problem. Note that this does not seem to be a problem with other programmers like the ATMEL Dragon. 
+`Unable to connect` message. I've found that grounding yourself with a braclet to a real gorund (not the just ground pin on the programmer) while insterting soves this problem. Note that this does not seem to be a problem with other programmers like the ATMEL Dragon. 
 6. Connect a VIBE V2 board to the jig. Video showing the 10-pin backside jig is here...<br>
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=tlA72ofPwDw" target="_blank"><img src="http://img.youtube.com/vi/tlA72ofPwDw/0.jpg" 
 width="240" height="180" border="10" /></a>
 4. Launch a Command Window in the directory with the firmware hex file and enter the following command..<br>
-`AVRDUDE -c usbtiny -p84 -U flash:w:vibe10-flash.hex -B 4`<br>
+For USBTINY:
+`AVRDUDE -c usbtiny -pt84 -U flash:w:vibe10-flash.hex -B 4`<br>
+For USBASP:
+`AVRDUDE -c usbasp -pt84 -U flash:w:vibe10-flash.hex -B 4`<br>
 Note that the `-U` and `-B` are case sensitive! 
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.

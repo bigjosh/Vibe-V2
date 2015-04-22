@@ -15,7 +15,7 @@ Green solder mask.
 
 Optional White Legend. The silk layers are provided for reference and for test boards and are not required on production boards.
 
-Minimal clearance size: 7 mils. Minimal trace width: 6 mils. 
+Minimal clearance size: 7 mils. Minimal trace width: 8 mils. 
 
 All holes plated though.
 
@@ -25,16 +25,32 @@ The inlcuded top paste layer only includes SMD pads and does not include the bot
 
 The inlcuded top paste layer matches the pad sizes with no shrink or swell and should be adjusted depending on stencil type and process.
 
-MCP1 is an MSOP-10 package with 0.5mm pin pitch. Top mask and paste layers for this part may need to me adjusted depending on process. 
+MCP1 is an MSOP-10 package with 0.5mm pin pitch. Top mask and paste layers for this part may need to me adjusted depending on process.
 
 
 2. Assembly
 
-Reflow soldering.
+Reflow soldering for SMD parts.
+
+Board contains 3 though-hole components- 2 connectors and 1 jack. These though-hole parts are mounted on the back side of the board. 
 
 
 3. Part orentation
 
-Dot on silkscreen layer indicates the cathode direction on parts D1, D2, D3, RED, and WHITE. 
+Dot on silkscreen layer indicates the cathode direction on parts D1, D3, RED, and WHITE. 
 
-Parts D1, D2, and D3 are marked with a stripe on the cathode side. 
+Parts D1 and D3 are marked with a stripe on the cathode side. 
+
+Photos available in the "/Orientation Photos" directory of the file package. 
+
+
+4. Firmware programming
+
+Part U1 requires firmware. The IC can be programmed directly by the distributor or onsite using a bulk programmer. The IC can also be programmed after assembly using a programming jig. 
+
+The latest release of the firmware file is available here...
+
+https://github.com/bigjosh/Vibe-V2/releases
+
+Note that this version of the board *requires* firmware version 2.2.0 or higher and is not compatible with older versions! Using an older firmware version could overdrive the LEDs!
+
