@@ -344,11 +344,11 @@ void updateMotor( uint16_t top, uint16_t normalizedDuty, uint8_t vccx10 ) {
 
 // We use Timer0 for timing functions and also PWMing the LEDs
 
-#define TIMER0_PRESCALER	1
+#define TIMER0PRESCALER	8
 
 #define TIMER0_STEPS_PER_S	(CYCLES_PER_S/TIMER0PRESCALER)
 
-#define TIMER0_STEPS_PER_CYCLE 256		// 8-bit timer overflow
+#define TIMER_0_STEPS_PER_CYCLE 256		// 8-bit timer overflow
 
 #define TIMER0_CYCLES_PER_S (TIMER_0_STEPS_PER_CYCLE/TIMER0_STEPS_PER_S)
 
@@ -364,9 +364,9 @@ void enableTimer0() {
 	TCCR0A = _BV( WGM01) | _BV( WGM00 ) ;	// Mode 3 Fast PWM TOP=0xff, update OCRx at BOTTOM
 		
 		//   0bxxxx0xxx	-~WGM02				Mode 3 Fast PWM TOP=0xff, update OCRx at BOTTOM
-		//	 0bxxxxx001 CS01				clk/1 prescaler
+		//	 0bxxxxx010 CS01				clk/8 (From prescaler). 		
 		//   ===========
-	TCCR0B = 0b00000001;	
+	TCCR0B = 0b00000010;	
 	
 	OCR0A = 0;		// Start with LEDs off
 	OCR0B = 0;	
@@ -393,8 +393,6 @@ void setWhiteLED( uint8_t b ) {
 	
 	} else {
 		
-		b/=16;												// Account for missing current limiting resistor - empirically found
-		
 		OCR0A = ~b;											// Set the compare register	- double buffered so will update at next top	
 		TCCR0A |= ( _BV( COM0A1  ) | _BV( COM0A0 ) );		// Set OC0A on Compare Match, Clear OC0A at BOTTOM (inverting mode)
 						
@@ -410,8 +408,6 @@ void setRedLED( uint8_t b ) {
 		TCCR0A &= ~ ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Normal port operation, OC0B disconnected (happens to hold true for all modes)
 		
 	} else {
-		
-		b/=16;												// Account for missing current limiting resistor - empirically found
 		
 		OCR0B = ~b;											// Set the compare register	- double buffered so will update at next top	
 		TCCR0A |= ( _BV( COM0B1  ) | _BV( COM0B0 ) );		// Set OC0B on Compare Match, Clear OC0B at BOTTOM (inverting mode)
@@ -569,10 +565,9 @@ int main(void)
 	
 		// Cold boot, run test mode
 
-		// Blink back and forth to show LEDs work and solicit a button press	
-		
+		// Blink back and forth to show LEDs work and solicit a button press			
 
-		for(uint8_t i=0;i<100 && !BUTTON_STATE_DOWN(); i++ ) {
+		for(uint8_t i=0;i<100 && !BUTTON_STATE_DOWN();i++) {
 	
 			setRedLED(255);
 	

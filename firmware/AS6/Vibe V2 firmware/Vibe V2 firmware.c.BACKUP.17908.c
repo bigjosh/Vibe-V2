@@ -568,12 +568,20 @@ int main(void)
 	if ( !watchDogResetFlag )		{		// Are we coming out of anything except for a WatchDog reset?
 	
 		// Cold boot, run test mode
+<<<<<<< HEAD
 
+		// Blink back and forth to show LEDs work and solicit a button press			
+
+		for(uint8_t i=0;i<100 && !BUTTON_STATE_DOWN();i++) {
+	
+=======
+				
 		// Blink back and forth to show LEDs work and solicit a button press	
 		
-
+			
 		for(uint8_t i=0;i<100 && !BUTTON_STATE_DOWN(); i++ ) {
-	
+			
+>>>>>>> origin/master
 			setRedLED(255);
 	
 			for(uint8_t j=0; j<100 && !BUTTON_STATE_DOWN();j++ ) { 

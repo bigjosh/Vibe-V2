@@ -15,11 +15,11 @@
  Therefore, this is a defensive style designed to keep running and self correct.
  The program is designed to completely reset the MPU every time the motor turns off or the power charger
  is unplugged or the button is held down for too long.
- 
+  
  -josh
  
 */
- 
+     
 // CPU speed in Hz. Needed for timing functions.
 // This is the default fuse setting and works fine for PWM frequencies up to about 10Khz (1% lowest duty), or 100KHz (10% lowest duty). 
 // This suits the current speed settings, but a high clock might be needed for higher PWM frequencies
@@ -74,23 +74,6 @@
 
 #define EOC_STATE_ACTIVE()		((EOC_PIN & _BV(EOC_BIT))==0)
 
-
-// The JACK IO pin is connected to the hot pin of the
-// charging jack though a 1K resistor. It could be used
-// to detect a charger connection or for a half duplex 
-// serial connection
-
-#define JACK_PORT	PORTB
-#define JACK_BIT	1
-#define JACK_DDR	DDRB
-#define JACK_PIN	PINB
-#define JACK_INT	PCINT9
-
-// Jack is normally pulled-up by internal resistor, but a slave device can momentarily 
-// pull it low to request a connection or send a 0 bit
-
-#define JACK_STATE_LOW() (!(JACK_PIN & _BV(JACK_BIT))) 
-
 // CIP is the charge-in-progress (battery full) signal. It s Active LOW.
 // It is connected to the STAT1 line from the battery controller
 // Note we must be pull up this line
@@ -110,8 +93,8 @@
 
 #define BUTTON_LONG_PRESS_MS 500			// How long to hold down button to be considered a long press rather than a push
 											// Long press immediately turns off motor without needing to cycle though remaining speeds
-
-
+											
+											
 #define BUTTON_STUCK_TIMEOUT_S	(60*30)		// How long does the button need to be held down for to enter button lockout mode? 
 
 // Different cutoffs because the drain of the motor on the battery lowers the voltage, which will recover when the 
@@ -147,10 +130,10 @@ typedef struct {
 
 	
 #define SPEED_STEP_COUNT 4
-	
+
 const speedStepStruct speedSteps[SPEED_STEP_COUNT] PROGMEM = {
 	
-	{                    0,    0 },			// step 0 = off
+	{          0,     0 },			// step 0 = off
 	{		3136,  7510 },
 	{	   12520, 10600 },
 	{	   25400, 15660 },
@@ -162,15 +145,15 @@ const speedStepStruct speedSteps[SPEED_STEP_COUNT] PROGMEM = {
 // Note that register values are hard coded rather than #defined because they 
 // can not just be moved around.
 
-
+									
 // Turn the motor completely off- disconnects from PWM generator
 
 void motorOff(void) {
 
-	
+		
 	TCCR1A = 0;		// Disconnect Timer1A outputs from pins. "Normal port operation, OC1B disconnected"	
 					// Will revert back to PORT value, which is always zero
-	
+		
 }
 
 // Initialize the motor pin. Sets to output mode, which will drive is LOW 
@@ -179,7 +162,7 @@ void motorOff(void) {
 void motorInit() {
 	
 	DDRA |= _BV(5);		// Set pin to output mode. It will already be low because ports default to 0 on reset
-	
+		
 }
 
 // SetVFD motor PWM on pin 8/PA5/OC1B
@@ -191,7 +174,7 @@ void motorInit() {
 
 
 void setMotorPWM( uint16_t match , uint16_t top ) {
-	
+			
 	if (match==0) {			// Special case this because the PWM generator still generates a pulse at 0 duty cycle
 							// "If the OCR1x is set equal to BOTTOM (0x0000) the output will be a narrow spike for each TOP+1 timer clock cycle."
 		
@@ -223,10 +206,10 @@ void setMotorPWM( uint16_t match , uint16_t top ) {
 		//			0b00000001	CS			clk	I/O/1 (No prescaling)
 	
 		TCCR1B =	0b00011001;
-	
+							
 		// "The actual OC1x value will only be visible on the port pin if the data direction for the port pin is set as output (DDR_OC1x)."
 		// We set to output mode on startup
-							
+												
 	}
 	
 }
@@ -378,7 +361,7 @@ void enableTimer0() {
 void disableTimer0() {
 
 	TCCR0B = 0;			// No clock, timer stopped. 
-	
+		
 }
 
 
@@ -403,7 +386,7 @@ void setWhiteLED( uint8_t b ) {
 }
 
 void setRedLED( uint8_t b ) {
-	
+		
 	if (b==0)	{	// Off
 		
 		RED_LED_PORT &= ~_BV(RED_LED_BIT);					// Normal port output to low	
@@ -426,95 +409,6 @@ void setLEDsOff() {
 }
 
 
-uint16_t jack_data =0;
-
-// Red data from the power jack
-// Called if jack is low
-
-void readJack() {
-	
-									
-	uint8_t		bits = 10;
-	uint16_t	bytes =  0;
-				
-	while (bits>0) {
-		
-
-		unsigned int bitTimeout = 3 * CYCLES_PER_MS;			// Wait at most 10 ms for next bit
-
-		while (!JACK_STATE_LOW()) {				// Wait for low at start of bit (will already be low when entering 1st time)
-			
-			bitTimeout--;
-			
-			if (bitTimeout==0) return;
-			
-		}
-
-								
-		while (JACK_STATE_LOW()) {				// Wait for rising pulse
-			
-			bitTimeout--;
-			
-			if (bitTimeout==0) return;
-			
-		}
-
-		_delay_ms(1);			// Wait for 1 ms before sampling data bit	
-		
-		bytes <<=1;
-				
-		if ( !JACK_STATE_LOW() ) {
-						
-			bytes |= 0x01;				// Put this bit at the bottom of the data byte we are building
-			
-		}
-		
-		bits--;
-				
-	}				
-	
-	
-	jack_data = bytes;
-	
-	
-	/*
-	
-	PORTA &= ~_BV(4);
-	_delay_us(100);
-	PORTA |= _BV(4);
-	_delay_us(100);			
-	PORTA &= ~_BV(4);
-	_delay_us(100);
-	
-						
-	
-	uint8_t mask = 0b10000000;
-	
-	for(int p=0; p<8;p++ ) {
-
-
-		if (jack_data & mask) {
-			PORTA |= _BV(4);
-		} else {			
-			PORTA &= ~_BV(4);			
-		}
-		
-		_delay_us(200);
-			
-		
-	}
-	
-	PORTA &= ~_BV(4);
-	
-	*/
-
-		
-	if (jack_data==0) setRedLED(128); else setRedLED(0);
-	
-}
-
-
-
 // Dummy ISRs for the pin change interrupts.
 // These will catch and wake on..
 // *Change in battery charger status lines
@@ -532,207 +426,207 @@ EMPTY_INTERRUPT( PCINT1_vect );
 	// This is a dummy routine. This is here just so the processor has something to do when it wakes up.
 	// This will just return back to the main program.
 	// TODO: Figure out how to just put an IRET in the vector table to save time and code space.
-
-
+	
+	
 int main(void)
 {
-
+	
 	motorInit();				// Initialize the motor port to drive the MOSFET low
-
+	
 	uint8_t watchDogResetFlag = MCUSR & _BV(WDRF);		/// Save the watchdog flag
-
+	
 	MCUSR &= ~ _BV( WDRF );		// Clear the watchdog flag
 								// "In safety level 1, WDE is overridden by WDRF in MCUSR...."
 								// "This means that WDE is always set when WDRF is set."
 								// IF we left this Set, then we could get watchdogged while sleeping
-
+								
 	wdt_enable( WDTO_8S );		// Give ourselves 8 seconds before forced reboot
-	
+			
 	enableTimer0();				// Initialize the timer that also PWMs the LEDs
 	
 	WHITE_LED_DDR	|= _BV(WHITE_LED_BIT);		// Pin to output
-	RED_LED_DDR |= _BV(RED_LED_BIT);
-	
-	// Button sense pin setup	
+	RED_LED_DDR		|= _BV(RED_LED_BIT);
 
+	// Button sense pin setup	
+	
 	BUTTON_PORT |= _BV(BUTTON_BIT);		// Enable pull-up for button pin
 	
 	// Battery Charger status pin setup
-		
+	
 	EOC_PORT |= _BV(EOC_BIT);				// Activate pull-up
-		
+	
 	CIP_PORT |= _BV( CIP_BIT);				// Activate pull-up
-		
+	
 	_delay_us(1);							// Give the pull-ups a second to work	
-	
+			
 	if ( !watchDogResetFlag )		{		// Are we coming out of anything except for a WatchDog reset?
-	
+		
 		// Cold boot, run test mode
-
+				
 		// Blink back and forth to show LEDs work and solicit a button press	
 		
-
+			
 		for(uint8_t i=0;i<100 && !BUTTON_STATE_DOWN(); i++ ) {
-	
+			
 			setRedLED(255);
-	
+			
 			for(uint8_t j=0; j<100 && !BUTTON_STATE_DOWN();j++ ) { 
-			_delay_ms(1);
+				_delay_ms(1);				
 			}
-		
+			
 			setRedLED(0);
 			setWhiteLED(255);
-		
+			
 			for(uint8_t j=0; j<100 && !BUTTON_STATE_DOWN();j++ ) {
-			_delay_ms(1);
-	}
-	
+				_delay_ms(1);
+			}
+			
 			setWhiteLED(0);
-	
+					
 			wdt_reset();
-			
+
 		}
-	
+				
 		_delay_ms(BUTTON_DEBOUNCE_TIME_MS);
-		
+								
 		// TODO: Put more code here for some testing and feedback on initial battery connection at the factory.
-			
+		
 	}
+												
+	// Ready to begin normal operation!	
 	
-	// Ready to begin normal operation!
 	
-							
 	if (BUTTON_STATE_DOWN())	{		// Possible stuck button?
-			
+		
 		// If we get here, either we just finished test mode and the button is Still down, in which case
 		// we are testing to make sure it goes back up 
-			
+		
 		// Otherwise we just reset and the button was down when we woke, so likely it is stuck down 
 		// and that is what caused the reset. In this case, show the user and then eventually disable the button.
 		
 		// Each pass of this loop takes ~1 sec.
-				
-		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
-								
 		
+		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
+			
+			
 			// To indicate that we are in a stuck-button sequence, we will blink the white LED
 			// at 50% brightness, 1Hz, 10% duty cycle. This looks different than other states 
 			// and also minimizes battery usage (the LED pulls 10+mA) since we might be doing this
 			// for many minutes
-		
+			
 			// Start with LED off because it looks better when we are coming in from a watchdog
 			// reset because the button was held down for more than 8 secs. Otherwise user
 			// sees an odd blink pattern. 
-		
+			
 			setWhiteLED(0);
-						
+			
 			// Leave the white LED off for 900 ms or until the button goes up
-				
+			
 			for( uint8_t l=0; l<90 && BUTTON_STATE_DOWN() ; l++) {
 				_delay_ms(10);
 			}
-		
-				
-			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
+			
 						
+			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
+			
 			// Leave the white LED on for 100 ms or until the button goes up
 			// Could do this as a single _delay_ms(100) but that might feel un-responsive
-
-									
+			
+			
 			for( uint8_t l=0; l<10 && BUTTON_STATE_DOWN() ; l++) {
 				_delay_ms(10);
 			}
-		
+					
 			wdt_reset();		
-
+			
 		}
 		
 		
 		// Turn off LED before continuing
 		setWhiteLED(0);
-
+				
 		// Debounce the possible button up transition 				
-				
+		
 		_delay_ms(BUTTON_DEBOUNCE_TIME_MS);		
-				
+		
 	}
-				
+	
 	if (BUTTON_STATE_DOWN())	{			// Do we still have a stuck button?
-			
+	
 		BUTTON_PORT &= ~_BV(BUTTON_BIT);	// Disable pull up to avoid running the battery down
-				
+	
 		// Do not enable interrupt on button pin change - we will require a charger state change to wake up
 		// Since the interrupt is not enabled, the pin will be disconnected during sleep so any floating
 		// on it will not waste power.
-			
+	
 	} else {
-				
+	
 		// Leave pull-up enabled
-
+	
 		PCMSK1 = _BV(BUTTON_INT);				// Enable interrupt on button pin so we wake on a press
-						
-		}
-
+	
+	}
+	
 	PCMSK0 = _BV(EOC_INT) | _BV(CIP_INT);	// Enable interrupt on change in state-of-charge pin or end-of-charge pin no matter what
-
-	GIMSK |= _BV(PCIE1) | _BV(PCIE0);		// Enable both pin change interrupt vectors (each individual pin was also be enabled above)
 		
-		// Clear pending interrupt flags. This way we will only get an interrupt if something changes
-		// after we read it. There is a race condition where something could change between the flag clear and the
-		// reads below, so code should be able to deal with possible redundant interrupt and worst case
+	GIMSK |= _BV(PCIE1) | _BV(PCIE0);		// Enable both pin change interrupt vectors (each individual pin was also be enabled above)
+			
+	// Clear pending interrupt flags. This way we will only get an interrupt if something changes
+	// after we read it. There is a race condition where something could change between the flag clear and the
+	// reads below, so code should be able to deal with possible redundant interrupt and worst case
 	// is that we get woken up an extra time and go back to sleep.	
-
+	
 	GIFR = _BV(PCIF1) | _BV(PCIF0);			// Clear interrupt flags so we will interrupt on any change after now...
 																		
 	if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE()  ) {			// Check if conditions are ALREADY true since we only wake on change....
-										
+			
 		// Ok, it is bedtime!
 												
 		set_sleep_mode( SLEEP_MODE_PWR_DOWN );  // Go into deep sleep where only a pin change can wake us.. uses only ~0.1uA!
-		
+					
 		// GOOD NIGHT!		
-						
+		
 		// This code disables the Watchdog. Note that we can not use the library wdt_disable() becuase it has a bug
 		// that causes intermittent unwanted resets.
 		
 		// Note interrupts are already clear when we get here, otherwise we would need to worry about getting interrupted between the two following lines
-				
+		
 		WDTCSR |= _BV(WDCE) | _BV(WDE);		// In the same operation, write a logic one to WDCE and WDE.
 											// Note we use OR to preserve the prescaler
 		
 		WDTCSR = 0;							//	Within the next four clock cycles, in the same operation, write the WDE and WDP bits
 											// as desired, but with the WDCE bit cleared.
 		
-			sleep_enable();							// "To enter any of the three sleep modes, the SE bit in MCUCR must be written to logic one and a SLEEP instruction must be executed."
-			sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts." 
-			sleep_cpu();							// This must come right after the sei() to avoid race condition
-				
-			// GOOD MORNING!
-			// If we get here, then a button push or change in charger status woke s up....
-				
-			sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer?s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
+		sleep_enable();							// "To enter any of the three sleep modes, the SE bit in MCUCR must be written to logic one and a SLEEP instruction must be executed."				
+		sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts."		
+		sleep_cpu();							// This must come right after the sei() to avoid race condition
+
+		// GOOD MORNING!
+		// If we get here, then a button push or change in charger status woke s up....
+			
+		sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer’s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
 		
-			cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)						
-						
+		cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)
+				
 		wdt_enable( WDTO_8S );			// Re-enable watchdog on wake Give ourselves 8 seconds before reboot
-		}
-		
+	}
+			
 	// Ok, now we are running!!!
-				
-		// Motor speed
-		uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
-		
+	
+	// Motor speed
+	uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
+			
 	while (1)	{		
-													
+		
 		// This main loop runs for as long as the motor is on. 
 		// It can be terminated by battery charger change of state, low battery detection, button press back to 0 speed, or long button press
 		// All these changes terminate the loop in a reboot. 
-				
-						
+		
+		
 		if (EOC_STATE_ACTIVE())		{		// End of charge?
-					
+			
 			motorOff();						//Turn motor off in case were running before plug went in
-																																				
+			
 			setWhiteLED(255);				// White LED full on
 			
 			
@@ -741,92 +635,92 @@ int main(void)
 			while (EOC_STATE_ACTIVE()); 	// White LED on for as long as we are charging....
 			// Note that this will watchdog timeout after 8 seconds and reboot us,
 			// After which we will immediately fall right back to here and continue to show the white LED
-								
+			
 			setWhiteLED(0);					// Turn it off now, for instant feedback if unplugged (otherwise it will be on for extra 250ms waiting for watchdog reset)
-					
+			
 			// Charger unplugged, reboot for goo measure
-					
+									
 			REBOOT();
-															
+			
 		}
-					
-					
+		
+				
 		if (CIP_STATE_ACTIVE())		{		// Charging?
-					
+			
 			motorOff();						//Turn motor off in case were running before plug went in
 						
 			uint8_t brightness=0;
 			int8_t direction=1;
-						
+			
 			_delay_ms( JACK_DEBOUNCE_TIME_MS );
-												
+						
 			while (CIP_STATE_ACTIVE())	{	// White LED pulse for as long as we are charging....
-							
+				
 				setWhiteLED(brightness);
-							
+				
 				if (brightness==255) {
 					
 					direction=-1;
-				
+					
 				} else if (brightness==0) {
 				
 					direction=1;
-
+					
 				}
 				
 				brightness+=direction;
 				
 				_delay_ms(1);		// Slows the speed of the rampping LED
-				
+								
 				wdt_reset();
 				
 			}
 			
 			setWhiteLED(0);					// Turn it off now, for instant feedback if unplugged (otherwise it will be on for extra 250ms waiting for watchdog reset)
-
+						
 			// All done charing, reboot for good measure
-
+			
 			REBOOT();
+			
+		}
+		
 				
-			}			
-			
-			
 		uint8_t vccx10 = readVccVoltage();				// Capture the current power supply voltage. This takes ~1ms and will be needed multiple times below
-			
+		
 		if ( vccx10 <= LOW_BATTERY_VOLTS_COLDx10) {
-									
+			
 			if ( (currentSpeedStep==0) || ( vccx10 <= LOW_BATTERY_VOLTS_WARMx10) ) {	// Motor off, or running and really low?
-
+			
 				motorOff();
-				
+			
 				setWhiteLED(0);									// Needed bacuse both LEDs might be on if we are in the middle of a button press
-
+			
 				setRedLED(255);
-					
+			
 				_delay_ms(LOW_BATTERY_LED_ONTIME_MS);			// Show red LED to user to show low battery
-					
+				
 				while (BUTTON_STATE_DOWN());					// Wait for button to be released if pressed
 																// Will watchdog timeout in 8 seconds if stuff
 				setRedLED(0);
-					
+						
 				REBOOT();
-					
-				}								
-			} 				
 				
-			
+			}
+		}
+
+								
 		uint8_t buttonPressedFlag=0;
-			
+		
 		if (BUTTON_STATE_DOWN())	{		// Button pushed?
-				
+			
 			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
-				
+			
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);			// debounce going down...
-																															
+			
 			if ( currentSpeedStep ==0 ) {				// Special case first press turning on instantly
 				
 				updateMotor( pgm_read_word(&speedSteps[1].top) , pgm_read_word(&speedSteps[1].normailzedDuty), vccx10);		// Set new motor speed
-					
+
 			}
 			
 			uint16_t buttonDownCount=0;
@@ -855,53 +749,46 @@ int main(void)
 				}
 				
 				_delay_ms(1);		// One loop=~1ms
-								
-							}
-							
+				
+			}
+			
 			// Pressed less than a long press
-				
+			
 			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
-				
+												
 			currentSpeedStep++;
-				
+			
 			if (currentSpeedStep >= SPEED_STEP_COUNT )	{ // Cycled all the Way around?
 								
 				currentSpeedStep=0;
-								
+				
 			}
-								
+						
 		}
-								
+											
 		updateMotor( pgm_read_word(&speedSteps[currentSpeedStep].top) , pgm_read_word(&speedSteps[currentSpeedStep].normailzedDuty), vccx10);		// Set new motor speed
-				
+		
 		if (buttonPressedFlag) {
-							
+			
 			// Button released, white LED off again
-				
-								setWhiteLED(0);
+			
+			setWhiteLED(0);
 						
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);		// debounce the button returning back up
-							
-				
-							}
-				
+			
+			
+		}
+		
 		if (currentSpeedStep==0) {		// Either we stepped though the settings back to off, or we got a spuriuous wake up
 			REBOOT();	
-			}
-		
+		}
+							
 
-		// Next check for a request on the data jack....			
-		if (JACK_STATE_LOW()) {
-			
-			readJack();
-
-		}	
-					
 		// If we get to here, then we check for a low battery and had the chance to reboot if we found one,
 		// so ok to postpone reset...		
 		
 		wdt_reset();
-								
-			}
-			
+		
+	}
+	
 }
