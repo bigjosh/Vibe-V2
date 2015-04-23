@@ -705,7 +705,7 @@ int main(void)
 			// GOOD MORNING!
 			// If we get here, then a button push or change in charger status woke s up....
 				
-			sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer’s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
+			sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer?s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
 		
 			cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)						
 						
