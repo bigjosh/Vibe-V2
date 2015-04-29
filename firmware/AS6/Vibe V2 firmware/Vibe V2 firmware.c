@@ -87,9 +87,12 @@
 #define JACK_INT	PCINT9
 
 // Jack is normally pulled-up by internal resistor, but a slave device can momentarily 
-// pull it low to request a connection or send a 0 bit
+// pull it low to to send a bits
 
 #define JACK_STATE_LOW() (!(JACK_PIN & _BV(JACK_BIT))) 
+
+#define JACK_ON()  (JACK_PORT |= _BV(JACK_BIT))			// Enable pull up on power jack. A connected controller will pull down to signal to communicate. 
+#define JACK_OFF() (JACK_PORT &= ~_BV(JACK_BIT))		// Disable pull up on power jack. A connected controller will sense this and disconnect. 
 
 // CIP is the charge-in-progress (battery full) signal. It s Active LOW.
 // It is connected to the STAT1 line from the battery controller
@@ -425,28 +428,34 @@ void setLEDsOff() {
 	setWhiteLED(0);
 }
 
+// Show signal sampling points on testpoint MOSI
 
-uint16_t jack_data =0;
+//#define DEBUG_JACK 1
 
-// Red data from the power jack
-// Called if jack is low
+// Read data from the power jack
+// Called if jack is low during the main event loop
 
-void readJack() {
+// Returns 1 if speed was changed
+
+uint8_t readJack( speedStepStruct *speedStepPtr ) {
 	
-									
-	uint8_t		bits = 10;
-	uint16_t	bytes =  0;
+	uint8_t		bits = 16;
+	uint16_t	data =  0;
+    
+    static speedStepStruct recievedSpeedStep;
 				
 	while (bits>0) {
 		
-
-		unsigned int bitTimeout = 3 * CYCLES_PER_MS;			// Wait at most 10 ms for next bit
-
+		unsigned int bitTimeout = 15 * CYCLES_PER_MS;			
+              
 		while (!JACK_STATE_LOW()) {				// Wait for low at start of bit (will already be low when entering 1st time)
 			
 			bitTimeout--;
 			
-			if (bitTimeout==0) return;
+			if (bitTimeout==0) {
+                setWhiteLED(40);
+                return(0);
+            }                
 			
 		}
 
@@ -455,62 +464,87 @@ void readJack() {
 			
 			bitTimeout--;
 			
-			if (bitTimeout==0) return;
+			if (bitTimeout==0) {
+    			setWhiteLED(255);
+    			return(0);
+			}
 			
 		}
-
-		_delay_ms(1);			// Wait for 1 ms before sampling data bit	
+        
+        #ifdef DEBUG_JACK
+            PORTA |= _BV(6);
+        #endif
+        
+		_delay_ms(1);			// Wait for 1 ms so we are sampling level at the exact center of the bit	
 		
-		bytes <<=1;
+		data <<=1;
 				
 		if ( !JACK_STATE_LOW() ) {
 						
-			bytes |= 0x01;				// Put this bit at the bottom of the data byte we are building
+			data |= 0x01;				// Put this bit at the bottom of the data byte we are building
 			
 		}
+
+        #ifdef DEBUG_JACK
+            PORTA &= ~_BV(6);
+        #endif
+        
 		
 		bits--;
 				
 	}				
-	
-	
-	jack_data = bytes;
-	
-	
-	/*
-	
-	PORTA &= ~_BV(4);
-	_delay_us(100);
-	PORTA |= _BV(4);
-	_delay_us(100);			
-	PORTA &= ~_BV(4);
-	_delay_us(100);
-	
-						
-	
-	uint8_t mask = 0b10000000;
-	
-	for(int p=0; p<8;p++ ) {
+    
+    uint8_t jack_command = data >> 12 ;
+    uint8_t jack_param   = (data >> 4 ) & 0xff;
+        
+    uint8_t checksum = ( (jack_command) ^ ( jack_param ) ^ ( jack_param >> 4 ) ^ 0x0f ) & 0x0f;
+    
+    if ( checksum != (data & 0x0f) ) {          // Bad checksum        
 
 
-		if (jack_data & mask) {
-			PORTA |= _BV(4);
-		} else {			
-			PORTA &= ~_BV(4);			
-		}
-		
-		_delay_us(200);
-			
-		
-	}
-	
-	PORTA &= ~_BV(4);
-	
-	*/
-
-		
-	if (jack_data==0) setRedLED(128); else setRedLED(0);
-	
+        #ifdef DEBUG_JACK
+        PORTA |= _BV(6);
+        #endif
+        
+        #ifdef DEBUG_JACK
+        PORTA &= ~_BV(6);
+        #endif
+        
+        
+        setRedLED(16);
+        return(0);        
+    }        
+        
+        
+    
+    switch (jack_command) {
+        
+        case 0x00:      // first byte of top
+            recievedSpeedStep.top = jack_param << 8;
+            break;
+        
+        case 0x01:      // second byte of top     
+            recievedSpeedStep.normailzedDuty|= jack_param;
+            break;
+            
+        case 0x02:      // first byte of duty
+            recievedSpeedStep.normailzedDuty = jack_param << 8;
+            break;
+        
+        case 0x03:      // second byte of duty
+            recievedSpeedStep.normailzedDuty|= jack_param;
+            break;
+            
+        case 0x04:      // Activate change atomically so we do not get an intermediate value
+            speedStepPtr->top = recievedSpeedStep.top;
+            speedStepPtr->normailzedDuty = recievedSpeedStep.normailzedDuty;
+            return(1);
+            break;
+        
+    }
+    
+    return(0);
+    
 }
 
 
@@ -537,6 +571,10 @@ EMPTY_INTERRUPT( PCINT1_vect );
 int main(void)
 {
 
+    #ifdef DEBUG_JACK
+    DDRA |= _BV(6);
+    #endif
+    
 	motorInit();				// Initialize the motor port to drive the MOSFET low
 
 	uint8_t watchDogResetFlag = MCUSR & _BV(WDRF);		/// Save the watchdog flag
@@ -715,14 +753,18 @@ int main(void)
 			cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)						
 						
 		wdt_enable( WDTO_8S );			// Re-enable watchdog on wake Give ourselves 8 seconds before reboot
-		}
+	}
 		
 	// Ok, now we are running!!!
 				
-		// Motor speed
-		uint8_t currentSpeedStep = 0;				// What motor speed setting are we currently on?
+	// Motor speed
+	uint8_t currentSpeedStep = 0;		// What motor speed setting are we currently on?
+    speedStepStruct speedStep;
+    
+    JACK_ON();			// Enable pull up on power jack. A connected controller will pull down to signal it wants to communicate
 		
 	while (1)	{		
+        
 													
 		// This main loop runs for as long as the motor is on. 
 		// It can be terminated by battery charger change of state, low battery detection, button press back to 0 speed, or long button press
@@ -789,6 +831,7 @@ int main(void)
 			REBOOT();
 				
 			}			
+            
 			
 			
 		uint8_t vccx10 = readVccVoltage();				// Capture the current power supply voltage. This takes ~1ms and will be needed multiple times below
@@ -813,12 +856,12 @@ int main(void)
 					
 				}								
 			} 				
-				
+				                
 			
 		uint8_t buttonPressedFlag=0;
 			
 		if (BUTTON_STATE_DOWN())	{		// Button pushed?
-				
+                        				
 			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
 				
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);			// debounce going down...
@@ -856,7 +899,7 @@ int main(void)
 				
 				_delay_ms(1);		// One loop=~1ms
 								
-							}
+			}
 							
 			// Pressed less than a long press
 				
@@ -869,21 +912,25 @@ int main(void)
 				currentSpeedStep=0;
 								
 			}
+            
+            speedStep.top               = pgm_read_word(&speedSteps[currentSpeedStep].top);
+            speedStep.normailzedDuty    = pgm_read_word(&speedSteps[currentSpeedStep].normailzedDuty);
+            
 								
 		}
 								
-		updateMotor( pgm_read_word(&speedSteps[currentSpeedStep].top) , pgm_read_word(&speedSteps[currentSpeedStep].normailzedDuty), vccx10);		// Set new motor speed
+		updateMotor( speedStep.top , speedStep.normailzedDuty , vccx10);		// Set new motor speed
 				
 		if (buttonPressedFlag) {
 							
 			// Button released, white LED off again
 				
-								setWhiteLED(0);
+			setWhiteLED(0);
 						
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);		// debounce the button returning back up
 							
 				
-							}
+		}
 				
 		if (currentSpeedStep==0) {		// Either we stepped though the settings back to off, or we got a spuriuous wake up
 			REBOOT();	
@@ -892,16 +939,22 @@ int main(void)
 
 		// Next check for a request on the data jack....			
 		if (JACK_STATE_LOW()) {
-			
-			readJack();
-
-		}	
-					
+            
+                  			
+           	if (readJack( &speedStep )) {
+                   
+                   currentSpeedStep = 3;        // Skip to the final speed step once a controller is connected
+                                                // so we turn off in next button press
+               }
+                      
+           
+		}
+        
 		// If we get to here, then we check for a low battery and had the chance to reboot if we found one,
 		// so ok to postpone reset...		
 		
 		wdt_reset();
 								
-			}
+	}
 			
 }
