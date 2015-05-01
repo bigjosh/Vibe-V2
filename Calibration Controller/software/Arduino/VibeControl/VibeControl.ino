@@ -81,7 +81,7 @@ uint8_t send(uint16_t x) {
         
         _delay_us(500);
         
-        if ( JACK_READ() == 0 ) return(1);    // VIBE is not listening
+      //  if ( JACK_READ() == 0 ) return(1);    // VIBE is not listening
         
         if ( (x & 0x8000) == 0  ) {
             
@@ -102,7 +102,7 @@ uint8_t send(uint16_t x) {
     
     JACK_HIGH;   // Go high
     
-    _delay_ms(20);    // Plenty of space for resync
+    //_delay_ms(20);    // Plenty of space for resync
     
     return(0);
     
@@ -272,6 +272,7 @@ uint8_t sendValues() {
 
 void loop()
 {
+    /*
     
     if ( JACK_READ() == 0 ) {    // We should see a pull-up from the VIBE if connected
         
@@ -285,6 +286,8 @@ void loop()
         refreshValues();
                        
     }
+    
+    */
     
     
     lcd_key = read_LCD_buttons();  // read the buttons
@@ -377,18 +380,16 @@ void loop()
             if (mode) {
                 
                 top=x;
-                refreshTop();
-                
+                refreshTop();                
                 sendValues();
                 
                 //         sendCommand( 0x00 , top >> 8 );
                 //         sendCommand( 0x01 , top & 0xff);
                 
-                } else {
+             } else {
                 
                 duty=x;
-                refreshDuty();
-                
+                refreshDuty();            
                 sendValues();
                 
                 //         sendCommand( 0x02 , duty >> 8 );
