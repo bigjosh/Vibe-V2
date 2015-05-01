@@ -21,9 +21,9 @@ For reference, the current values are…
 
 |Speed|DUTY|TOP|
 |----|----:|----|
-|1|3136|8191|
-|2|11264|8191|
-|3|24640|8191|
+|1|3136|7510|
+|2|12520|10600|
+|3|25400|15660|
 
 Once you find values that you like for a given speed, write down the two numbers since once you switch to another speed or unplug the Remote, there is no easy way to get them back. 
 
@@ -36,8 +36,12 @@ The controller is actually just an Arduino Uno with an [LED Keypad Shield](http:
 |(+) |  A5|
 |(-) | GND |
 
-Additionally there is a ~300 ohm pullup resistor from A5 to 5+.
+On my cables, the (+) wire is the one with the white stripe on it. 
 
-Additionally the trace from the power connector to the battery chanrging chip on the VIBE has to be cut to keep the chip form kicking in and messing up the communications. Hopefully this can be avoided in the future. 
+To support the connection to the controller, the VIBE board must...
 
+* Have the [DATA_JACK fork](https://github.com/bigjosh/Vibe-V2/tree/data_jack/firmware/AS6/Vibe%20V2%20firmware) of the firmware installed.
 
+* Have an diode installed between the (+) side of the power jack and the 10uF cap connected to the battery charger.
+
+ <img src="/Calibration%20Controller/Extra%20Diode%20For%20Controller.PNG">
