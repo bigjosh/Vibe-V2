@@ -153,9 +153,9 @@ typedef struct {
 	
 const speedStepStruct speedSteps[SPEED_STEP_COUNT] PROGMEM = {
 	
-	{                    0,    0 },			// step 0 = off
+	{           0,    0 },			// step 0 = off
 	{		3136,  7510 },
-	{	   12520, 10600 },
+	{	    8992,  8193 },
 	{	   25400, 15660 },
 		
 };
