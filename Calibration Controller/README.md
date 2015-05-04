@@ -1,4 +1,4 @@
-The Calibration Controller helps you find precise values for the VIBE's speed settings. It connects to a specially outfited VIBE device though the power jack so 
+﻿The Calibration Controller helps you find precise values for the VIBE's speed settings. It connects to a specially outfited VIBE device though the power jack so 
 settings can be tested interactively under real use conditions. 
 
 <img src="/Calibration Controller/DSC08125.JPG">
@@ -22,7 +22,7 @@ For reference, the current values are…
 |Speed|DUTY|TOP|
 |----|----:|----|
 |1|3136|7510|
-|2|12520|10600|
+|2|8992|8193|
 |3|25400|15660|
 
 Once you find values that you like for a given speed, write down the two numbers since once you switch to another speed or unplug the Remote, there is no easy way to get them back. 
