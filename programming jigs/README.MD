@@ -59,7 +59,7 @@ https://github.com/bigjosh/Vibe-V2/releases
 width="240" height="180" border="10" /></a>
 4. Launch an ATMEL Studio Command Window (*a shortcut should have been created durring install) and change into the directory with the firmware hex file.
 5. Enter the following command ..<br>
-`atprogram -t avrdragon -i isp -d attiny84a -cl 250khz program -c -fl  -f vibe10-flash.hex --verify`
+`atprogram -t avrdragon -i isp -d attiny84a -cl 250khz program -c -fl  -f Vibe.V2.firmware.V2-2-1.hex --verify`
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
 
@@ -89,9 +89,9 @@ to the computer when you instert a new board. If you do loose the connection, yo
 width="240" height="180" border="10" /></a>
 4. Launch a Command Window in the directory with the firmware hex file and enter the following command..<br>
 For USBTINY:
-`AVRDUDE -c usbtiny -pt84 -U flash:w:vibe10-flash.hex -B 4`<br>
+`AVRDUDE -c usbtiny -pt84 -U flash:w:Vibe.V2.firmware.V2-2-1.hex -B 4`<br>
 For USBASP:
-`AVRDUDE -c usbasp -pt84 -U flash:w:vibe10-flash.hex -B 4`<br>
+`AVRDUDE -c usbasp -pt84 -U flash:w:Vibe.V2.firmware.V2-2-1.hex -B 4`<br>
 Note that the `-U` and `-B` are case sensitive! 
 5. Wait for the programing to complete and check that the verify succeeded. 
 5. Remove the board and repeat. Note that for subsequent boards, you can just press F3 and then enter to repeat the last command.
