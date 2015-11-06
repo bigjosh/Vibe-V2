@@ -95,7 +95,8 @@
 											// Long press immediately turns off motor without needing to cycle though remaining speeds
 											
 											
-#define BUTTON_STUCK_TIMEOUT_S	(60*30)		// How long does the button need to be held down for to enter button lockout mode? 
+#define BUTTON_TRANSIT_TIMEOUT_S	(10)	// How long does the button need to be held down for to enter transit lockout mode?		
+											// The first 8 seconds happens 
 
 // Different cutoffs because the drain of the motor on the battery lowers the voltage, which will recover when the 
 // motor is turned off
@@ -506,7 +507,7 @@ int main(void)
 		
 		// Each pass of this loop takes ~1 sec.
 		
-		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
+		for( uint16_t t=0; (t <= BUTTON_TRANSIT_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
 			
 			
 			// To indicate that we are in a stuck-button sequence, we will blink the white LED
@@ -552,8 +553,24 @@ int main(void)
 	}
 	
 	if (BUTTON_STATE_DOWN())	{			// Do we still have a stuck button?
+
+
+		// Indicate we are entering transit mode with a quick double flash of both LEDs		
+				
+		setRedLED(255);
+		setWhiteLED(255);
+		_delay_ms(100);
+		setRedLED(0);
+		setWhiteLED(0);
+		_delay_ms(100);
+		setRedLED(255);
+		setWhiteLED(255);
+		_delay_ms(100);
+		setRedLED(0);
+		setWhiteLED(0);
+		
 	
-		BUTTON_PORT &= ~_BV(BUTTON_BIT);	// Disable pull up to avoid running the battery down
+		BUTTON_PORT &= ~_BV(BUTTON_BIT);	// Disable pull up to avoid running the battery down. 
 	
 		// Do not enable interrupt on button pin change - we will require a charger state change to wake up
 		// Since the interrupt is not enabled, the pin will be disconnected during sleep so any floating
@@ -693,7 +710,7 @@ int main(void)
 			
 				motorOff();
 			
-				setWhiteLED(0);									// Needed bacuse both LEDs might be on if we are in the middle of a button press
+				setWhiteLED(0);									// Needed becuase both LEDs might be on if we are in the middle of a button press
 			
 				setRedLED(255);
 			
@@ -733,19 +750,16 @@ int main(void)
 					// The full reboot cycle takes 100+ ms.
 					
 					motorOff();
-					
-					while(BUTTON_STATE_DOWN());		// Wait for the button to be release or watchdog to timeout after 8 secs and reboot us
-					
+										
 					setWhiteLED(0);
 					
 					REBOOT();
 					
 					// If the button is still down once we reboot, we will land in the stuck button detection sequence
 					// which will blink the LED for 1/10th second every second until either the button goes up
-					// or the Stuck button timeout expires
+					// or the transit mode button timeout expires
 					
-					// Note that REBOOT takes at least 60ms so will effectively debounce the button up event
-					
+				
 				}
 				
 				_delay_ms(1);		// One loop=~1ms
@@ -754,7 +768,7 @@ int main(void)
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
 												
 			currentSpeedStep++;
 			
@@ -779,7 +793,7 @@ int main(void)
 			
 		}
 		
-		if (currentSpeedStep==0) {		// Either we stepped though the settings back to off, or we got a spuriuous wake up
+		if (currentSpeedStep==0) {		// Either we stepped though the settings back to off, or we got a spurious wake up
 			REBOOT();	
 		}
 							
