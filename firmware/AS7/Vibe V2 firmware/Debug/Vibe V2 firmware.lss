@@ -3,29 +3,29 @@ Vibe V2 firmware.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         0000076a  00000000  00000000  00000054  2**1
+  0 .text         000006dc  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000000  00800060  00800060  000007be  2**0
+  1 .data         00000000  00800060  00800060  00000730  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .comment      00000030  00000000  00000000  000007be  2**0
+  2 .comment      00000030  00000000  00000000  00000730  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000007f0  2**2
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000760  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000080  00000000  00000000  0000082c  2**0
+  4 .debug_aranges 00000080  00000000  00000000  0000079c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   00000db8  00000000  00000000  000008ac  2**0
+  5 .debug_info   00000cec  00000000  00000000  0000081c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000331  00000000  00000000  00001664  2**0
+  6 .debug_abbrev 00000331  00000000  00000000  00001508  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000542  00000000  00000000  00001995  2**0
+  7 .debug_line   000004d1  00000000  00000000  00001839  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000120  00000000  00000000  00001ed8  2**2
+  8 .debug_frame  00000120  00000000  00000000  00001d0c  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00000345  00000000  00000000  00001ff8  2**0
+  9 .debug_str    00000335  00000000  00000000  00001e2c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00001237  00000000  00000000  0000233d  2**0
+ 10 .debug_loc    00000e49  00000000  00000000  00002161  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 000002f0  00000000  00000000  00003574  2**0
+ 11 .debug_ranges 00000238  00000000  00000000  00002faa  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -67,7 +67,7 @@ Disassembly of section .text:
   3a:	de bf       	out	0x3e, r29	; 62
   3c:	cd bf       	out	0x3d, r28	; 61
   3e:	b1 d0       	rcall	.+354    	; 0x1a2 <main>
-  40:	92 c3       	rjmp	.+1828   	; 0x766 <_exit>
+  40:	4b c3       	rjmp	.+1686   	; 0x6d8 <_exit>
 
 00000042 <__bad_interrupt>:
   42:	de cf       	rjmp	.-68     	; 0x0 <__vectors>
@@ -200,7 +200,7 @@ void motorOff(void) {
 	uint8_t vccx10 = (uint8_t) ( (11 * 1024) / adc); 
   86:	80 e0       	ldi	r24, 0x00	; 0
   88:	9c e2       	ldi	r25, 0x2C	; 44
-  8a:	b5 d2       	rcall	.+1386   	; 0x5f6 <__udivmodhi4>
+  8a:	6e d2       	rcall	.+1244   	; 0x568 <__udivmodhi4>
   8c:	86 2f       	mov	r24, r22
 	
 	ADCSRA &= ~_BV( ADEN );			// Disable ADC to save power
@@ -284,14 +284,14 @@ void updateMotor( uint16_t top, uint16_t normalizedDuty, uint8_t vccx10 ) {
   fc:	30 e0       	ldi	r19, 0x00	; 0
   fe:	40 e0       	ldi	r20, 0x00	; 0
  100:	50 e0       	ldi	r21, 0x00	; 0
- 102:	8d d2       	rcall	.+1306   	; 0x61e <__udivmodsi4>
+ 102:	46 d2       	rcall	.+1164   	; 0x590 <__udivmodsi4>
 	
 	unsigned long voltageAdjusedMatch = (voltageAdjustedDuty  * top ) / 65535UL;	// Covert the duty that is scaled 0-65535 to a match that is scaled 0-top.
  104:	ca 01       	movw	r24, r20
  106:	b9 01       	movw	r22, r18
  108:	a7 01       	movw	r20, r14
  10a:	96 01       	movw	r18, r12
- 10c:	ac d2       	rcall	.+1368   	; 0x666 <__umulsidi3>
+ 10c:	65 d2       	rcall	.+1226   	; 0x5d8 <__umulsidi3>
  10e:	62 2f       	mov	r22, r18
  110:	73 2f       	mov	r23, r19
  112:	84 2f       	mov	r24, r20
@@ -300,7 +300,7 @@ void updateMotor( uint16_t top, uint16_t normalizedDuty, uint8_t vccx10 ) {
  118:	3f ef       	ldi	r19, 0xFF	; 255
  11a:	40 e0       	ldi	r20, 0x00	; 0
  11c:	50 e0       	ldi	r21, 0x00	; 0
- 11e:	7f d2       	rcall	.+1278   	; 0x61e <__udivmodsi4>
+ 11e:	38 d2       	rcall	.+1136   	; 0x590 <__udivmodsi4>
 																					// Match = (duty/65535) * top, but we need to stay integer so switch the order
 																					// Keep as a long because it could be bigger than an int due to scaling because of a low voltage
 		
@@ -475,8 +475,6 @@ int main(void)
 	uint8_t watchDogResetFlag = MCUSR & _BV(WDRF);		/// Save the watchdog flag
  1a4:	c4 b7       	in	r28, 0x34	; 52
 	
-	uint8_t transitModeFlag = 0;						// Are we currently in transit mode? If so, don't turn on motor. Only clear with a reset from plugging in or holding button for 8 seconds until reset.
-	
 	MCUSR &= ~ _BV( WDRF );		// Clear the watchdog flag
  1a6:	84 b7       	in	r24, 0x34	; 52
  1a8:	87 7f       	andi	r24, 0xF7	; 247
@@ -532,7 +530,7 @@ void wdt_enable (const uint8_t value)
 			
 	if ( !watchDogResetFlag )		{		// Are we coming out of anything except for a WatchDog reset?
  1ca:	c3 fd       	sbrc	r28, 3
- 1cc:	c9 c1       	rjmp	.+914    	; 0x560 <__stack+0x301>
+ 1cc:	95 c1       	rjmp	.+810    	; 0x4f8 <__stack+0x299>
 		// Cold boot, run test mode
 				
 		// Blink back and forth to show LEDs work and solicit a button press	
@@ -556,7 +554,7 @@ void wdt_enable (const uint8_t value)
 			
 			for(uint8_t j=0; j<100 && !BUTTON_STATE_DOWN();j++ ) { 
  1da:	b0 99       	sbic	0x16, 0	; 22
- 1dc:	01 c2       	rjmp	.+1026   	; 0x5e0 <__stack+0x381>
+ 1dc:	ba c1       	rjmp	.+884    	; 0x552 <__stack+0x2f3>
  1de:	0a c0       	rjmp	.+20     	; 0x1f4 <main+0x52>
  1e0:	e9 ef       	ldi	r30, 0xF9	; 249
  1e2:	f0 e0       	ldi	r31, 0x00	; 0
@@ -580,7 +578,7 @@ void wdt_enable (const uint8_t value)
 			
 			for(uint8_t j=0; j<100 && !BUTTON_STATE_DOWN();j++ ) {
  1fc:	b0 99       	sbic	0x16, 0	; 22
- 1fe:	e8 c1       	rjmp	.+976    	; 0x5d0 <__stack+0x371>
+ 1fe:	a1 c1       	rjmp	.+834    	; 0x542 <__stack+0x2e3>
  200:	0a c0       	rjmp	.+20     	; 0x216 <main+0x74>
  202:	e9 ef       	ldi	r30, 0xF9	; 249
  204:	f0 e0       	ldi	r31, 0x00	; 0
@@ -617,1191 +615,1069 @@ void wdt_enable (const uint8_t value)
  22a:	f1 f7       	brne	.-4      	; 0x228 <main+0x86>
  22c:	00 c0       	rjmp	.+0      	; 0x22e <main+0x8c>
  22e:	00 00       	nop
- 230:	97 c1       	rjmp	.+814    	; 0x560 <__stack+0x301>
- 232:	e3 ec       	ldi	r30, 0xC3	; 195
- 234:	f9 e0       	ldi	r31, 0x09	; 9
- 236:	31 97       	sbiw	r30, 0x01	; 1
- 238:	f1 f7       	brne	.-4      	; 0x236 <main+0x94>
- 23a:	00 c0       	rjmp	.+0      	; 0x23c <main+0x9a>
- 23c:	00 00       	nop
- 23e:	81 50       	subi	r24, 0x01	; 1
-		// Each pass of this loop takes ~1 sec.
-		
-		for( uint16_t t=0; (t <= BUTTON_TRANSITMODE_TIMEOUT) && BUTTON_STATE_DOWN(); t++ ) {
-			
-		
-			for( uint8_t l=0; l<100 && BUTTON_STATE_DOWN() ; l++) {
- 240:	11 f0       	breq	.+4      	; 0x246 <main+0xa4>
- 242:	b0 9b       	sbis	0x16, 0	; 22
- 244:	f6 cf       	rjmp	.-20     	; 0x232 <main+0x90>
-				_delay_ms(10);
-			}
-		
-				
-			wdt_reset();			
- 246:	a8 95       	wdr
- 248:	21 50       	subi	r18, 0x01	; 1
- 24a:	31 09       	sbc	r19, r1
+ 230:	63 c1       	rjmp	.+710    	; 0x4f8 <__stack+0x299>
 		// Otherwise we just reset and the button was down when we woke, so likely it is stuck down 
 		// and that is what caused the reset. In this case, show the user and then eventually disable the button.
 		
 		// Each pass of this loop takes ~1 sec.
 		
-		for( uint16_t t=0; (t <= BUTTON_TRANSITMODE_TIMEOUT) && BUTTON_STATE_DOWN(); t++ ) {
- 24c:	49 f0       	breq	.+18     	; 0x260 <__stack+0x1>
- 24e:	b0 9b       	sbis	0x16, 0	; 22
- 250:	04 c0       	rjmp	.+8      	; 0x25a <main+0xb8>
- 252:	06 c0       	rjmp	.+12     	; 0x260 <__stack+0x1>
- 254:	23 e0       	ldi	r18, 0x03	; 3
- 256:	30 e0       	ldi	r19, 0x00	; 0
- 258:	93 e6       	ldi	r25, 0x63	; 99
-			
-		
-			for( uint8_t l=0; l<100 && BUTTON_STATE_DOWN() ; l++) {
- 25a:	b0 9b       	sbis	0x16, 0	; 22
- 25c:	b1 c1       	rjmp	.+866    	; 0x5c0 <__stack+0x361>
- 25e:	f3 cf       	rjmp	.-26     	; 0x246 <main+0xa4>
-		}
-		
-		// Ok, we are now in transit lockout mode. Show user with a quick double blink
-		
-		
-		setRedLED(255);
- 260:	8f ef       	ldi	r24, 0xFF	; 255
- 262:	8e df       	rcall	.-228    	; 0x180 <setRedLED>
-		setWhiteLED(255);
- 264:	8f ef       	ldi	r24, 0xFF	; 255
- 266:	7d df       	rcall	.-262    	; 0x162 <setWhiteLED>
- 268:	87 ea       	ldi	r24, 0xA7	; 167
- 26a:	91 e6       	ldi	r25, 0x61	; 97
- 26c:	01 97       	sbiw	r24, 0x01	; 1
- 26e:	f1 f7       	brne	.-4      	; 0x26c <__stack+0xd>
- 270:	00 c0       	rjmp	.+0      	; 0x272 <__stack+0x13>
- 272:	00 00       	nop
-		_delay_ms(100);
-		setRedLED(0);
- 274:	80 e0       	ldi	r24, 0x00	; 0
- 276:	84 df       	rcall	.-248    	; 0x180 <setRedLED>
-		setWhiteLED(0);
- 278:	80 e0       	ldi	r24, 0x00	; 0
- 27a:	73 df       	rcall	.-282    	; 0x162 <setWhiteLED>
- 27c:	e7 ea       	ldi	r30, 0xA7	; 167
- 27e:	f1 e6       	ldi	r31, 0x61	; 97
- 280:	31 97       	sbiw	r30, 0x01	; 1
- 282:	f1 f7       	brne	.-4      	; 0x280 <__stack+0x21>
- 284:	00 c0       	rjmp	.+0      	; 0x286 <__stack+0x27>
- 286:	00 00       	nop
-		_delay_ms(100);
-		setRedLED(255);
- 288:	8f ef       	ldi	r24, 0xFF	; 255
- 28a:	7a df       	rcall	.-268    	; 0x180 <setRedLED>
-		setWhiteLED(255);
- 28c:	8f ef       	ldi	r24, 0xFF	; 255
- 28e:	69 df       	rcall	.-302    	; 0x162 <setWhiteLED>
- 290:	87 ea       	ldi	r24, 0xA7	; 167
- 292:	91 e6       	ldi	r25, 0x61	; 97
- 294:	01 97       	sbiw	r24, 0x01	; 1
- 296:	f1 f7       	brne	.-4      	; 0x294 <__stack+0x35>
- 298:	00 c0       	rjmp	.+0      	; 0x29a <__stack+0x3b>
- 29a:	00 00       	nop
-		_delay_ms(100);
-		setRedLED(0);
- 29c:	80 e0       	ldi	r24, 0x00	; 0
- 29e:	70 df       	rcall	.-288    	; 0x180 <setRedLED>
-		setWhiteLED(0);
- 2a0:	80 e0       	ldi	r24, 0x00	; 0
- 2a2:	5f df       	rcall	.-322    	; 0x162 <setWhiteLED>
-		transitModeFlag = 1;
-		
-		// No continue with normal stuck button detection in case the button is just stuck...
-		
-		
-		for( uint16_t t=0; (t <= 2) && BUTTON_STATE_DOWN(); t++ ) {
- 2a4:	b0 9b       	sbis	0x16, 0	; 22
- 2a6:	13 c0       	rjmp	.+38     	; 0x2ce <__stack+0x6f>
- 2a8:	5e c1       	rjmp	.+700    	; 0x566 <__stack+0x307>
- 2aa:	e3 ec       	ldi	r30, 0xC3	; 195
- 2ac:	f9 e0       	ldi	r31, 0x09	; 9
- 2ae:	31 97       	sbiw	r30, 0x01	; 1
- 2b0:	f1 f7       	brne	.-4      	; 0x2ae <__stack+0x4f>
- 2b2:	00 c0       	rjmp	.+0      	; 0x2b4 <__stack+0x55>
- 2b4:	00 00       	nop
- 2b6:	81 50       	subi	r24, 0x01	; 1
-			
-			
-			for( uint8_t l=0; l<100 && BUTTON_STATE_DOWN() ; l++) {
- 2b8:	11 f0       	breq	.+4      	; 0x2be <__stack+0x5f>
- 2ba:	b0 9b       	sbis	0x16, 0	; 22
- 2bc:	f6 cf       	rjmp	.-20     	; 0x2aa <__stack+0x4b>
-				_delay_ms(10);
-			}
-			
-			
-			wdt_reset();
- 2be:	a8 95       	wdr
- 2c0:	21 50       	subi	r18, 0x01	; 1
- 2c2:	31 09       	sbc	r19, r1
-		transitModeFlag = 1;
-		
-		// No continue with normal stuck button detection in case the button is just stuck...
-		
-		
-		for( uint16_t t=0; (t <= 2) && BUTTON_STATE_DOWN(); t++ ) {
- 2c4:	09 f4       	brne	.+2      	; 0x2c8 <__stack+0x69>
- 2c6:	4f c1       	rjmp	.+670    	; 0x566 <__stack+0x307>
- 2c8:	b0 9b       	sbis	0x16, 0	; 22
- 2ca:	04 c0       	rjmp	.+8      	; 0x2d4 <__stack+0x75>
- 2cc:	4c c1       	rjmp	.+664    	; 0x566 <__stack+0x307>
- 2ce:	23 e0       	ldi	r18, 0x03	; 3
- 2d0:	30 e0       	ldi	r19, 0x00	; 0
- 2d2:	93 e6       	ldi	r25, 0x63	; 99
-			
-			
-			for( uint8_t l=0; l<100 && BUTTON_STATE_DOWN() ; l++) {
- 2d4:	b0 9b       	sbis	0x16, 0	; 22
- 2d6:	6c c1       	rjmp	.+728    	; 0x5b0 <__stack+0x351>
- 2d8:	f2 cf       	rjmp	.-28     	; 0x2be <__stack+0x5f>
-			wdt_reset();
-			
-		}
-		
-		
-		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
- 2da:	c9 e0       	ldi	r28, 0x09	; 9
- 2dc:	d7 e0       	ldi	r29, 0x07	; 7
- 2de:	19 e0       	ldi	r17, 0x09	; 9
+		for( uint16_t t=0; (t <= BUTTON_TRANSIT_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
+ 232:	cb e0       	ldi	r28, 0x0B	; 11
+ 234:	d0 e0       	ldi	r29, 0x00	; 0
+ 236:	19 e0       	ldi	r17, 0x09	; 9
 			
 			// Start with LED off because it looks better when we are coming in from a watchdog
 			// reset because the button was held down for more than 8 secs. Otherwise user
 			// sees an odd blink pattern. 
 			
 			setWhiteLED(0);
- 2e0:	80 e0       	ldi	r24, 0x00	; 0
- 2e2:	3f df       	rcall	.-386    	; 0x162 <setWhiteLED>
+ 238:	80 e0       	ldi	r24, 0x00	; 0
+ 23a:	93 df       	rcall	.-218    	; 0x162 <setWhiteLED>
 			
 			// Leave the white LED off for 900 ms or until the button goes up
 			
 			for( uint8_t l=0; l<90 && BUTTON_STATE_DOWN() ; l++) {
- 2e4:	b0 9b       	sbis	0x16, 0	; 22
- 2e6:	5c c1       	rjmp	.+696    	; 0x5a0 <__stack+0x341>
- 2e8:	0a c0       	rjmp	.+20     	; 0x2fe <__stack+0x9f>
- 2ea:	e3 ec       	ldi	r30, 0xC3	; 195
- 2ec:	f9 e0       	ldi	r31, 0x09	; 9
- 2ee:	31 97       	sbiw	r30, 0x01	; 1
- 2f0:	f1 f7       	brne	.-4      	; 0x2ee <__stack+0x8f>
- 2f2:	00 c0       	rjmp	.+0      	; 0x2f4 <__stack+0x95>
- 2f4:	00 00       	nop
- 2f6:	81 50       	subi	r24, 0x01	; 1
- 2f8:	11 f0       	breq	.+4      	; 0x2fe <__stack+0x9f>
- 2fa:	b0 9b       	sbis	0x16, 0	; 22
- 2fc:	f6 cf       	rjmp	.-20     	; 0x2ea <__stack+0x8b>
+ 23c:	b0 9b       	sbis	0x16, 0	; 22
+ 23e:	79 c1       	rjmp	.+754    	; 0x532 <__stack+0x2d3>
+ 240:	0a c0       	rjmp	.+20     	; 0x256 <main+0xb4>
+ 242:	e3 ec       	ldi	r30, 0xC3	; 195
+ 244:	f9 e0       	ldi	r31, 0x09	; 9
+ 246:	31 97       	sbiw	r30, 0x01	; 1
+ 248:	f1 f7       	brne	.-4      	; 0x246 <main+0xa4>
+ 24a:	00 c0       	rjmp	.+0      	; 0x24c <main+0xaa>
+ 24c:	00 00       	nop
+ 24e:	81 50       	subi	r24, 0x01	; 1
+ 250:	11 f0       	breq	.+4      	; 0x256 <main+0xb4>
+ 252:	b0 9b       	sbis	0x16, 0	; 22
+ 254:	f6 cf       	rjmp	.-20     	; 0x242 <main+0xa0>
 				_delay_ms(10);
 			}
 			
 						
 			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
- 2fe:	84 e6       	ldi	r24, 0x64	; 100
- 300:	30 df       	rcall	.-416    	; 0x162 <setWhiteLED>
+ 256:	84 e6       	ldi	r24, 0x64	; 100
+ 258:	84 df       	rcall	.-248    	; 0x162 <setWhiteLED>
 			
 			// Leave the white LED on for 100 ms or until the button goes up
 			// Could do this as a single _delay_ms(100) but that might feel un-responsive
 			
 			
 			for( uint8_t l=0; l<10 && BUTTON_STATE_DOWN() ; l++) {
- 302:	b0 9b       	sbis	0x16, 0	; 22
- 304:	45 c1       	rjmp	.+650    	; 0x590 <__stack+0x331>
- 306:	0a c0       	rjmp	.+20     	; 0x31c <__stack+0xbd>
- 308:	e3 ec       	ldi	r30, 0xC3	; 195
- 30a:	f9 e0       	ldi	r31, 0x09	; 9
- 30c:	31 97       	sbiw	r30, 0x01	; 1
- 30e:	f1 f7       	brne	.-4      	; 0x30c <__stack+0xad>
- 310:	00 c0       	rjmp	.+0      	; 0x312 <__stack+0xb3>
- 312:	00 00       	nop
- 314:	81 50       	subi	r24, 0x01	; 1
- 316:	11 f0       	breq	.+4      	; 0x31c <__stack+0xbd>
- 318:	b0 9b       	sbis	0x16, 0	; 22
- 31a:	f6 cf       	rjmp	.-20     	; 0x308 <__stack+0xa9>
+ 25a:	b0 9b       	sbis	0x16, 0	; 22
+ 25c:	62 c1       	rjmp	.+708    	; 0x522 <__stack+0x2c3>
+ 25e:	0a c0       	rjmp	.+20     	; 0x274 <__stack+0x15>
+ 260:	e3 ec       	ldi	r30, 0xC3	; 195
+ 262:	f9 e0       	ldi	r31, 0x09	; 9
+ 264:	31 97       	sbiw	r30, 0x01	; 1
+ 266:	f1 f7       	brne	.-4      	; 0x264 <__stack+0x5>
+ 268:	00 c0       	rjmp	.+0      	; 0x26a <__stack+0xb>
+ 26a:	00 00       	nop
+ 26c:	81 50       	subi	r24, 0x01	; 1
+ 26e:	11 f0       	breq	.+4      	; 0x274 <__stack+0x15>
+ 270:	b0 9b       	sbis	0x16, 0	; 22
+ 272:	f6 cf       	rjmp	.-20     	; 0x260 <__stack+0x1>
 				_delay_ms(10);
 			}
 					
 			wdt_reset();		
- 31c:	a8 95       	wdr
- 31e:	21 97       	sbiw	r28, 0x01	; 1
-			wdt_reset();
-			
-		}
+ 274:	a8 95       	wdr
+ 276:	21 97       	sbiw	r28, 0x01	; 1
+		// Otherwise we just reset and the button was down when we woke, so likely it is stuck down 
+		// and that is what caused the reset. In this case, show the user and then eventually disable the button.
 		
+		// Each pass of this loop takes ~1 sec.
 		
-		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
- 320:	11 f0       	breq	.+4      	; 0x326 <__stack+0xc7>
- 322:	b0 9b       	sbis	0x16, 0	; 22
- 324:	dd cf       	rjmp	.-70     	; 0x2e0 <__stack+0x81>
+		for( uint16_t t=0; (t <= BUTTON_TRANSIT_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
+ 278:	11 f0       	breq	.+4      	; 0x27e <__stack+0x1f>
+ 27a:	b0 9b       	sbis	0x16, 0	; 22
+ 27c:	dd cf       	rjmp	.-70     	; 0x238 <main+0x96>
 			
 		}
 		
 		
 		// Turn off LED before continuing
 		setWhiteLED(0);
- 326:	80 e0       	ldi	r24, 0x00	; 0
- 328:	1c df       	rcall	.-456    	; 0x162 <setWhiteLED>
- 32a:	89 e6       	ldi	r24, 0x69	; 105
- 32c:	98 e1       	ldi	r25, 0x18	; 24
- 32e:	01 97       	sbiw	r24, 0x01	; 1
- 330:	f1 f7       	brne	.-4      	; 0x32e <__stack+0xcf>
- 332:	00 c0       	rjmp	.+0      	; 0x334 <__stack+0xd5>
- 334:	00 00       	nop
+ 27e:	80 e0       	ldi	r24, 0x00	; 0
+ 280:	70 df       	rcall	.-288    	; 0x162 <setWhiteLED>
+ 282:	89 e6       	ldi	r24, 0x69	; 105
+ 284:	98 e1       	ldi	r25, 0x18	; 24
+ 286:	01 97       	sbiw	r24, 0x01	; 1
+ 288:	f1 f7       	brne	.-4      	; 0x286 <__stack+0x27>
+ 28a:	00 c0       	rjmp	.+0      	; 0x28c <__stack+0x2d>
+ 28c:	00 00       	nop
 		
 		_delay_ms(BUTTON_DEBOUNCE_TIME_MS);		
 		
 	}
 	
 	if (BUTTON_STATE_DOWN())	{			// Do we still have a stuck button?
- 336:	b0 99       	sbic	0x16, 0	; 22
- 338:	02 c0       	rjmp	.+4      	; 0x33e <__stack+0xdf>
+ 28e:	b0 99       	sbic	0x16, 0	; 22
+ 290:	24 c0       	rjmp	.+72     	; 0x2da <__stack+0x7b>
+
+
+		// Indicate we are entering transit mode with a quick double flash of both LEDs		
+				
+		setRedLED(255);
+ 292:	8f ef       	ldi	r24, 0xFF	; 255
+ 294:	75 df       	rcall	.-278    	; 0x180 <setRedLED>
+		setWhiteLED(255);
+ 296:	8f ef       	ldi	r24, 0xFF	; 255
+ 298:	64 df       	rcall	.-312    	; 0x162 <setWhiteLED>
+ 29a:	e7 ea       	ldi	r30, 0xA7	; 167
+ 29c:	f1 e6       	ldi	r31, 0x61	; 97
+ 29e:	31 97       	sbiw	r30, 0x01	; 1
+ 2a0:	f1 f7       	brne	.-4      	; 0x29e <__stack+0x3f>
+ 2a2:	00 c0       	rjmp	.+0      	; 0x2a4 <__stack+0x45>
+ 2a4:	00 00       	nop
+		_delay_ms(100);
+		setRedLED(0);
+ 2a6:	80 e0       	ldi	r24, 0x00	; 0
+ 2a8:	6b df       	rcall	.-298    	; 0x180 <setRedLED>
+		setWhiteLED(0);
+ 2aa:	80 e0       	ldi	r24, 0x00	; 0
+ 2ac:	5a df       	rcall	.-332    	; 0x162 <setWhiteLED>
+ 2ae:	87 ea       	ldi	r24, 0xA7	; 167
+ 2b0:	91 e6       	ldi	r25, 0x61	; 97
+ 2b2:	01 97       	sbiw	r24, 0x01	; 1
+ 2b4:	f1 f7       	brne	.-4      	; 0x2b2 <__stack+0x53>
+ 2b6:	00 c0       	rjmp	.+0      	; 0x2b8 <__stack+0x59>
+ 2b8:	00 00       	nop
+		_delay_ms(100);
+		setRedLED(255);
+ 2ba:	8f ef       	ldi	r24, 0xFF	; 255
+ 2bc:	61 df       	rcall	.-318    	; 0x180 <setRedLED>
+		setWhiteLED(255);
+ 2be:	8f ef       	ldi	r24, 0xFF	; 255
+ 2c0:	50 df       	rcall	.-352    	; 0x162 <setWhiteLED>
+ 2c2:	e7 ea       	ldi	r30, 0xA7	; 167
+ 2c4:	f1 e6       	ldi	r31, 0x61	; 97
+ 2c6:	31 97       	sbiw	r30, 0x01	; 1
+ 2c8:	f1 f7       	brne	.-4      	; 0x2c6 <__stack+0x67>
+ 2ca:	00 c0       	rjmp	.+0      	; 0x2cc <__stack+0x6d>
+ 2cc:	00 00       	nop
+		_delay_ms(100);
+		setRedLED(0);
+ 2ce:	80 e0       	ldi	r24, 0x00	; 0
+ 2d0:	57 df       	rcall	.-338    	; 0x180 <setRedLED>
+		setWhiteLED(0);
+ 2d2:	80 e0       	ldi	r24, 0x00	; 0
+ 2d4:	46 df       	rcall	.-372    	; 0x162 <setWhiteLED>
+		
 	
-		BUTTON_PORT &= ~_BV(BUTTON_BIT);	// Disable pull up to avoid running the battery down
- 33a:	c0 98       	cbi	0x18, 0	; 24
- 33c:	02 c0       	rjmp	.+4      	; 0x342 <__stack+0xe3>
+		BUTTON_PORT &= ~_BV(BUTTON_BIT);	// Disable pull up to avoid running the battery down. 
+ 2d6:	c0 98       	cbi	0x18, 0	; 24
+ 2d8:	02 c0       	rjmp	.+4      	; 0x2de <__stack+0x7f>
 	
 	} else {
 	
 		// Leave pull-up enabled
 	
 		PCMSK1 = _BV(BUTTON_INT);				// Enable interrupt on button pin so we wake on a press
- 33e:	81 e0       	ldi	r24, 0x01	; 1
- 340:	80 bd       	out	0x20, r24	; 32
+ 2da:	81 e0       	ldi	r24, 0x01	; 1
+ 2dc:	80 bd       	out	0x20, r24	; 32
 	
 	}
 	
 	PCMSK0 = _BV(EOC_INT) | _BV(CIP_INT);	// Enable interrupt on change in state-of-charge pin or end-of-charge pin no matter what
- 342:	83 e0       	ldi	r24, 0x03	; 3
- 344:	82 bb       	out	0x12, r24	; 18
+ 2de:	83 e0       	ldi	r24, 0x03	; 3
+ 2e0:	82 bb       	out	0x12, r24	; 18
 		
 	GIMSK |= _BV(PCIE1) | _BV(PCIE0);		// Enable both pin change interrupt vectors (each individual pin was also be enabled above)
- 346:	8b b7       	in	r24, 0x3b	; 59
- 348:	80 63       	ori	r24, 0x30	; 48
- 34a:	8b bf       	out	0x3b, r24	; 59
+ 2e2:	8b b7       	in	r24, 0x3b	; 59
+ 2e4:	80 63       	ori	r24, 0x30	; 48
+ 2e6:	8b bf       	out	0x3b, r24	; 59
 	// Clear pending interrupt flags. This way we will only get an interrupt if something changes
 	// after we read it. There is a race condition where something could change between the flag clear and the
 	// reads below, so code should be able to deal with possible redundant interrupt and worst case
 	// is that we get woken up an extra time and go back to sleep.	
 	
 	GIFR = _BV(PCIF1) | _BV(PCIF0);			// Clear interrupt flags so we will interrupt on any change after now...
- 34c:	80 e3       	ldi	r24, 0x30	; 48
- 34e:	8a bf       	out	0x3a, r24	; 58
+ 2e8:	80 e3       	ldi	r24, 0x30	; 48
+ 2ea:	8a bf       	out	0x3a, r24	; 58
 																		
 	if ( !CIP_STATE_ACTIVE() && !EOC_STATE_ACTIVE()  ) {			// Check if conditions are ALREADY true since we only wake on change....
- 350:	c9 9b       	sbis	0x19, 1	; 25
- 352:	1b c0       	rjmp	.+54     	; 0x38a <__stack+0x12b>
- 354:	c8 9b       	sbis	0x19, 0	; 25
- 356:	19 c0       	rjmp	.+50     	; 0x38a <__stack+0x12b>
+ 2ec:	c9 9b       	sbis	0x19, 1	; 25
+ 2ee:	1b c0       	rjmp	.+54     	; 0x326 <__stack+0xc7>
+ 2f0:	c8 9b       	sbis	0x19, 0	; 25
+ 2f2:	19 c0       	rjmp	.+50     	; 0x326 <__stack+0xc7>
 			
 		// Ok, it is bedtime!
 												
 		set_sleep_mode( SLEEP_MODE_PWR_DOWN );  // Go into deep sleep where only a pin change can wake us.. uses only ~0.1uA!
- 358:	85 b7       	in	r24, 0x35	; 53
- 35a:	87 7e       	andi	r24, 0xE7	; 231
- 35c:	80 61       	ori	r24, 0x10	; 16
- 35e:	85 bf       	out	0x35, r24	; 53
+ 2f4:	85 b7       	in	r24, 0x35	; 53
+ 2f6:	87 7e       	andi	r24, 0xE7	; 231
+ 2f8:	80 61       	ori	r24, 0x10	; 16
+ 2fa:	85 bf       	out	0x35, r24	; 53
+		// This code disables the Watchdog. Note that we can not use the library wdt_disable() becuase it has a bug
 		// that causes intermittent unwanted resets.
-		// http://electronics.stackexchange.com/questions/151865/why-does-my-avr-reset-when-i-call-wdt-disable-to-try-to-turn-the-watchdog-time
 		
 		// Note interrupts are already clear when we get here, otherwise we would need to worry about getting interrupted between the two following lines
 		
 		WDTCSR |= _BV(WDCE) | _BV(WDE);		// In the same operation, write a logic one to WDCE and WDE.
- 360:	81 b5       	in	r24, 0x21	; 33
- 362:	88 61       	ori	r24, 0x18	; 24
- 364:	81 bd       	out	0x21, r24	; 33
+ 2fc:	81 b5       	in	r24, 0x21	; 33
+ 2fe:	88 61       	ori	r24, 0x18	; 24
+ 300:	81 bd       	out	0x21, r24	; 33
 											// Note we use OR to preserve the prescaler
 		
 		WDTCSR = 0;							//	Within the next four clock cycles, in the same operation, write the WDE and WDP bits
- 366:	11 bc       	out	0x21, r1	; 33
+ 302:	11 bc       	out	0x21, r1	; 33
 											// as desired, but with the WDCE bit cleared.
 		
 		sleep_enable();							// "To enter any of the three sleep modes, the SE bit in MCUCR must be written to logic one and a SLEEP instruction must be executed."				
- 368:	85 b7       	in	r24, 0x35	; 53
- 36a:	80 62       	ori	r24, 0x20	; 32
- 36c:	85 bf       	out	0x35, r24	; 53
+ 304:	85 b7       	in	r24, 0x35	; 53
+ 306:	80 62       	ori	r24, 0x20	; 32
+ 308:	85 bf       	out	0x35, r24	; 53
 		sei();                                  // Enable global interrupts. "When using the SEI instruction to enable interrupts, the instruction following SEI will be executed before any pending interrupts."		
- 36e:	78 94       	sei
+ 30a:	78 94       	sei
 		sleep_cpu();							// This must come right after the sei() to avoid race condition
- 370:	88 95       	sleep
+ 30c:	88 95       	sleep
 
 		// GOOD MORNING!
 		// If we get here, then a button push or change in charger status woke s up....
 			
 		sleep_disable();						// "To avoid the MCU entering the sleep mode unless it is the programmer’s purpose, it is recommended to write the Sleep Enable (SE) bit to one just before the execution of the SLEEP instruction and to clear it immediately after waking up."
- 372:	85 b7       	in	r24, 0x35	; 53
- 374:	8f 7d       	andi	r24, 0xDF	; 223
- 376:	85 bf       	out	0x35, r24	; 53
+ 30e:	85 b7       	in	r24, 0x35	; 53
+ 310:	8f 7d       	andi	r24, 0xDF	; 223
+ 312:	85 bf       	out	0x35, r24	; 53
 		
 		cli();									// We are awake now, and do don't care about interrupts anymore (out interrupt routines don't do anything anyway)
- 378:	f8 94       	cli
- 37a:	99 e2       	ldi	r25, 0x29	; 41
- 37c:	88 e1       	ldi	r24, 0x18	; 24
- 37e:	0f b6       	in	r0, 0x3f	; 63
- 380:	f8 94       	cli
- 382:	a8 95       	wdr
- 384:	81 bd       	out	0x21, r24	; 33
- 386:	0f be       	out	0x3f, r0	; 63
- 388:	91 bd       	out	0x21, r25	; 33
+ 314:	f8 94       	cli
+ 316:	99 e2       	ldi	r25, 0x29	; 41
+ 318:	88 e1       	ldi	r24, 0x18	; 24
+ 31a:	0f b6       	in	r0, 0x3f	; 63
+ 31c:	f8 94       	cli
+ 31e:	a8 95       	wdr
+ 320:	81 bd       	out	0x21, r24	; 33
+ 322:	0f be       	out	0x3f, r0	; 63
+ 324:	91 bd       	out	0x21, r25	; 33
 		// This main loop runs for as long as the motor is on. 
 		// It can be terminated by battery charger change of state, low battery detection, button press back to 0 speed, or long button press
 		// All these changes terminate the loop in a reboot. 
 		
 		
 		if (EOC_STATE_ACTIVE())		{		// End of charge?
- 38a:	c8 9b       	sbis	0x19, 0	; 25
- 38c:	19 c0       	rjmp	.+50     	; 0x3c0 <__stack+0x161>
+ 326:	c8 9b       	sbis	0x19, 0	; 25
+ 328:	19 c0       	rjmp	.+50     	; 0x35c <__stack+0xfd>
 			REBOOT();
 			
 		}
 		
 				
 		if (CIP_STATE_ACTIVE())		{		// Charging?
- 38e:	c9 9b       	sbis	0x19, 1	; 25
- 390:	2f c0       	rjmp	.+94     	; 0x3f0 <__stack+0x191>
- 392:	c0 e0       	ldi	r28, 0x00	; 0
+ 32a:	c9 9b       	sbis	0x19, 1	; 25
+ 32c:	2f c0       	rjmp	.+94     	; 0x38c <__stack+0x12d>
+ 32e:	c0 e0       	ldi	r28, 0x00	; 0
 				
 			}
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
- 394:	ff 24       	eor	r15, r15
- 396:	f3 94       	inc	r15
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
+ 330:	ff 24       	eor	r15, r15
+ 332:	f3 94       	inc	r15
 												
 			currentSpeedStep++;
 			
 			if (currentSpeedStep >= SPEED_STEP_COUNT )	{ // Cycled all the Way around?
 								
 				currentSpeedStep=0;
- 398:	10 e0       	ldi	r17, 0x00	; 0
+ 334:	10 e0       	ldi	r17, 0x00	; 0
 			REBOOT();
 			
 		}
 		
 				
 		if (CIP_STATE_ACTIVE())		{		// Charging?
- 39a:	0f 2e       	mov	r0, r31
- 39c:	f4 ef       	ldi	r31, 0xF4	; 244
- 39e:	9f 2e       	mov	r9, r31
- 3a0:	f0 2d       	mov	r31, r0
- 3a2:	ee 24       	eor	r14, r14
- 3a4:	e3 94       	inc	r14
+ 336:	0f 2e       	mov	r0, r31
+ 338:	f4 ef       	ldi	r31, 0xF4	; 244
+ 33a:	9f 2e       	mov	r9, r31
+ 33c:	f0 2d       	mov	r31, r0
+ 33e:	ee 24       	eor	r14, r14
+ 340:	e3 94       	inc	r14
 			
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);			// debounce going down...
 			
 			if ( currentSpeedStep ==0 ) {				// Special case first press turning on instantly
 				
 				updateMotor( pgm_read_word(&speedSteps[1].top) , pgm_read_word(&speedSteps[1].normailzedDuty), vccx10);		// Set new motor speed
- 3a6:	0f 2e       	mov	r0, r31
- 3a8:	f6 e2       	ldi	r31, 0x26	; 38
- 3aa:	af 2e       	mov	r10, r31
- 3ac:	f0 e0       	ldi	r31, 0x00	; 0
- 3ae:	bf 2e       	mov	r11, r31
- 3b0:	f0 2d       	mov	r31, r0
- 3b2:	0f 2e       	mov	r0, r31
- 3b4:	f8 e2       	ldi	r31, 0x28	; 40
- 3b6:	cf 2e       	mov	r12, r31
- 3b8:	f0 e0       	ldi	r31, 0x00	; 0
- 3ba:	df 2e       	mov	r13, r31
- 3bc:	f0 2d       	mov	r31, r0
- 3be:	43 c0       	rjmp	.+134    	; 0x446 <__stack+0x1e7>
+ 342:	0f 2e       	mov	r0, r31
+ 344:	f6 e2       	ldi	r31, 0x26	; 38
+ 346:	af 2e       	mov	r10, r31
+ 348:	f0 e0       	ldi	r31, 0x00	; 0
+ 34a:	bf 2e       	mov	r11, r31
+ 34c:	f0 2d       	mov	r31, r0
+ 34e:	0f 2e       	mov	r0, r31
+ 350:	f8 e2       	ldi	r31, 0x28	; 40
+ 352:	cf 2e       	mov	r12, r31
+ 354:	f0 e0       	ldi	r31, 0x00	; 0
+ 356:	df 2e       	mov	r13, r31
+ 358:	f0 2d       	mov	r31, r0
+ 35a:	43 c0       	rjmp	.+134    	; 0x3e2 <__stack+0x183>
 // Turn the motor completely off- disconnects from PWM generator
 
 void motorOff(void) {
 
 		
 	TCCR1A = 0;		// Disconnect Timer1A outputs from pins. "Normal port operation, OC1B disconnected"	
- 3c0:	1f bc       	out	0x2f, r1	; 47
+ 35c:	1f bc       	out	0x2f, r1	; 47
 		
 		if (EOC_STATE_ACTIVE())		{		// End of charge?
 			
 			motorOff();						//Turn motor off in case were running before plug went in
 			
 			setWhiteLED(255);				// White LED full on
- 3c2:	8f ef       	ldi	r24, 0xFF	; 255
- 3c4:	ce de       	rcall	.-612    	; 0x162 <setWhiteLED>
- 3c6:	e7 ea       	ldi	r30, 0xA7	; 167
- 3c8:	f1 e6       	ldi	r31, 0x61	; 97
- 3ca:	31 97       	sbiw	r30, 0x01	; 1
- 3cc:	f1 f7       	brne	.-4      	; 0x3ca <__stack+0x16b>
- 3ce:	00 c0       	rjmp	.+0      	; 0x3d0 <__stack+0x171>
- 3d0:	00 00       	nop
+ 35e:	8f ef       	ldi	r24, 0xFF	; 255
+ 360:	00 df       	rcall	.-512    	; 0x162 <setWhiteLED>
+ 362:	87 ea       	ldi	r24, 0xA7	; 167
+ 364:	91 e6       	ldi	r25, 0x61	; 97
+ 366:	01 97       	sbiw	r24, 0x01	; 1
+ 368:	f1 f7       	brne	.-4      	; 0x366 <__stack+0x107>
+ 36a:	00 c0       	rjmp	.+0      	; 0x36c <__stack+0x10d>
+ 36c:	00 00       	nop
 			
 			
 			_delay_ms( JACK_DEBOUNCE_TIME_MS );
 			
 			while (EOC_STATE_ACTIVE()); 	// White LED on for as long as we are charging....
- 3d2:	c8 9b       	sbis	0x19, 0	; 25
- 3d4:	fe cf       	rjmp	.-4      	; 0x3d2 <__stack+0x173>
+ 36e:	c8 9b       	sbis	0x19, 0	; 25
+ 370:	fe cf       	rjmp	.-4      	; 0x36e <__stack+0x10f>
 			// Note that this will watchdog timeout after 8 seconds and reboot us,
 			// After which we will immediately fall right back to here and continue to show the white LED
 			
 			setWhiteLED(0);					// Turn it off now, for instant feedback if unplugged (otherwise it will be on for extra 250ms waiting for watchdog reset)
- 3d6:	80 e0       	ldi	r24, 0x00	; 0
- 3d8:	c4 de       	rcall	.-632    	; 0x162 <setWhiteLED>
- 3da:	99 e0       	ldi	r25, 0x09	; 9
- 3dc:	88 e1       	ldi	r24, 0x18	; 24
- 3de:	0f b6       	in	r0, 0x3f	; 63
- 3e0:	f8 94       	cli
- 3e2:	a8 95       	wdr
- 3e4:	81 bd       	out	0x21, r24	; 33
- 3e6:	0f be       	out	0x3f, r0	; 63
- 3e8:	91 bd       	out	0x21, r25	; 33
+ 372:	80 e0       	ldi	r24, 0x00	; 0
+ 374:	f6 de       	rcall	.-532    	; 0x162 <setWhiteLED>
+ 376:	99 e0       	ldi	r25, 0x09	; 9
+ 378:	88 e1       	ldi	r24, 0x18	; 24
+ 37a:	0f b6       	in	r0, 0x3f	; 63
+ 37c:	f8 94       	cli
+ 37e:	a8 95       	wdr
+ 380:	81 bd       	out	0x21, r24	; 33
+ 382:	0f be       	out	0x3f, r0	; 63
+ 384:	91 bd       	out	0x21, r25	; 33
 			
 			// Charger unplugged, reboot for goo measure
 									
 			REBOOT();
- 3ea:	ff cf       	rjmp	.-2      	; 0x3ea <__stack+0x18b>
+ 386:	ff cf       	rjmp	.-2      	; 0x386 <__stack+0x127>
 			
 		}
 		
 				
 		if (CIP_STATE_ACTIVE())		{		// Charging?
- 3ec:	c9 99       	sbic	0x19, 1	; 25
- 3ee:	2b c0       	rjmp	.+86     	; 0x446 <__stack+0x1e7>
+ 388:	c9 99       	sbic	0x19, 1	; 25
+ 38a:	2b c0       	rjmp	.+86     	; 0x3e2 <__stack+0x183>
 // Turn the motor completely off- disconnects from PWM generator
 
 void motorOff(void) {
 
 		
 	TCCR1A = 0;		// Disconnect Timer1A outputs from pins. "Normal port operation, OC1B disconnected"	
- 3f0:	1f bc       	out	0x2f, r1	; 47
- 3f2:	87 ea       	ldi	r24, 0xA7	; 167
- 3f4:	91 e6       	ldi	r25, 0x61	; 97
- 3f6:	01 97       	sbiw	r24, 0x01	; 1
- 3f8:	f1 f7       	brne	.-4      	; 0x3f6 <__stack+0x197>
- 3fa:	00 c0       	rjmp	.+0      	; 0x3fc <__stack+0x19d>
- 3fc:	00 00       	nop
+ 38c:	1f bc       	out	0x2f, r1	; 47
+ 38e:	e7 ea       	ldi	r30, 0xA7	; 167
+ 390:	f1 e6       	ldi	r31, 0x61	; 97
+ 392:	31 97       	sbiw	r30, 0x01	; 1
+ 394:	f1 f7       	brne	.-4      	; 0x392 <__stack+0x133>
+ 396:	00 c0       	rjmp	.+0      	; 0x398 <__stack+0x139>
+ 398:	00 00       	nop
 			uint8_t brightness=0;
 			int8_t direction=1;
 			
 			_delay_ms( JACK_DEBOUNCE_TIME_MS );
 						
 			while (CIP_STATE_ACTIVE())	{	// White LED pulse for as long as we are charging....
- 3fe:	c9 99       	sbic	0x19, 1	; 25
- 400:	17 c0       	rjmp	.+46     	; 0x430 <__stack+0x1d1>
- 402:	d1 e0       	ldi	r29, 0x01	; 1
- 404:	c0 e0       	ldi	r28, 0x00	; 0
+ 39a:	c9 99       	sbic	0x19, 1	; 25
+ 39c:	17 c0       	rjmp	.+46     	; 0x3cc <__stack+0x16d>
+ 39e:	d1 e0       	ldi	r29, 0x01	; 1
+ 3a0:	c0 e0       	ldi	r28, 0x00	; 0
 				
 				setWhiteLED(brightness);
 				
 				if (brightness==255) {
 					
 					direction=-1;
- 406:	0f ef       	ldi	r16, 0xFF	; 255
+ 3a2:	0f ef       	ldi	r16, 0xFF	; 255
 					
 				} else if (brightness==0) {
 				
 					direction=1;
- 408:	11 e0       	ldi	r17, 0x01	; 1
+ 3a4:	11 e0       	ldi	r17, 0x01	; 1
 			
 			_delay_ms( JACK_DEBOUNCE_TIME_MS );
 						
 			while (CIP_STATE_ACTIVE())	{	// White LED pulse for as long as we are charging....
 				
 				setWhiteLED(brightness);
- 40a:	8c 2f       	mov	r24, r28
- 40c:	aa de       	rcall	.-684    	; 0x162 <setWhiteLED>
+ 3a6:	8c 2f       	mov	r24, r28
+ 3a8:	dc de       	rcall	.-584    	; 0x162 <setWhiteLED>
 				
 				if (brightness==255) {
- 40e:	cf 3f       	cpi	r28, 0xFF	; 255
- 410:	21 f0       	breq	.+8      	; 0x41a <__stack+0x1bb>
+ 3aa:	cf 3f       	cpi	r28, 0xFF	; 255
+ 3ac:	21 f0       	breq	.+8      	; 0x3b6 <__stack+0x157>
 					
 					direction=-1;
 					
 				} else if (brightness==0) {
- 412:	c1 11       	cpse	r28, r1
- 414:	03 c0       	rjmp	.+6      	; 0x41c <__stack+0x1bd>
+ 3ae:	c1 11       	cpse	r28, r1
+ 3b0:	03 c0       	rjmp	.+6      	; 0x3b8 <__stack+0x159>
 				
 					direction=1;
- 416:	d1 2f       	mov	r29, r17
- 418:	01 c0       	rjmp	.+2      	; 0x41c <__stack+0x1bd>
+ 3b2:	d1 2f       	mov	r29, r17
+ 3b4:	01 c0       	rjmp	.+2      	; 0x3b8 <__stack+0x159>
 				
 				setWhiteLED(brightness);
 				
 				if (brightness==255) {
 					
 					direction=-1;
- 41a:	d0 2f       	mov	r29, r16
+ 3b6:	d0 2f       	mov	r29, r16
 				
 					direction=1;
 					
 				}
 				
 				brightness+=direction;
- 41c:	cd 0f       	add	r28, r29
- 41e:	e9 ef       	ldi	r30, 0xF9	; 249
- 420:	f0 e0       	ldi	r31, 0x00	; 0
- 422:	31 97       	sbiw	r30, 0x01	; 1
- 424:	f1 f7       	brne	.-4      	; 0x422 <__stack+0x1c3>
- 426:	00 c0       	rjmp	.+0      	; 0x428 <__stack+0x1c9>
- 428:	00 00       	nop
+ 3b8:	cd 0f       	add	r28, r29
+ 3ba:	89 ef       	ldi	r24, 0xF9	; 249
+ 3bc:	90 e0       	ldi	r25, 0x00	; 0
+ 3be:	01 97       	sbiw	r24, 0x01	; 1
+ 3c0:	f1 f7       	brne	.-4      	; 0x3be <__stack+0x15f>
+ 3c2:	00 c0       	rjmp	.+0      	; 0x3c4 <__stack+0x165>
+ 3c4:	00 00       	nop
 				
 				_delay_ms(1);		// Slows the speed of the rampping LED
 								
 				wdt_reset();
- 42a:	a8 95       	wdr
+ 3c6:	a8 95       	wdr
 			uint8_t brightness=0;
 			int8_t direction=1;
 			
 			_delay_ms( JACK_DEBOUNCE_TIME_MS );
 						
 			while (CIP_STATE_ACTIVE())	{	// White LED pulse for as long as we are charging....
- 42c:	c9 9b       	sbis	0x19, 1	; 25
- 42e:	ed cf       	rjmp	.-38     	; 0x40a <__stack+0x1ab>
+ 3c8:	c9 9b       	sbis	0x19, 1	; 25
+ 3ca:	ed cf       	rjmp	.-38     	; 0x3a6 <__stack+0x147>
 								
 				wdt_reset();
 				
 			}
 			
 			setWhiteLED(0);					// Turn it off now, for instant feedback if unplugged (otherwise it will be on for extra 250ms waiting for watchdog reset)
- 430:	80 e0       	ldi	r24, 0x00	; 0
- 432:	97 de       	rcall	.-722    	; 0x162 <setWhiteLED>
- 434:	99 e0       	ldi	r25, 0x09	; 9
- 436:	88 e1       	ldi	r24, 0x18	; 24
- 438:	0f b6       	in	r0, 0x3f	; 63
- 43a:	f8 94       	cli
- 43c:	a8 95       	wdr
- 43e:	81 bd       	out	0x21, r24	; 33
- 440:	0f be       	out	0x3f, r0	; 63
- 442:	91 bd       	out	0x21, r25	; 33
+ 3cc:	80 e0       	ldi	r24, 0x00	; 0
+ 3ce:	c9 de       	rcall	.-622    	; 0x162 <setWhiteLED>
+ 3d0:	99 e0       	ldi	r25, 0x09	; 9
+ 3d2:	88 e1       	ldi	r24, 0x18	; 24
+ 3d4:	0f b6       	in	r0, 0x3f	; 63
+ 3d6:	f8 94       	cli
+ 3d8:	a8 95       	wdr
+ 3da:	81 bd       	out	0x21, r24	; 33
+ 3dc:	0f be       	out	0x3f, r0	; 63
+ 3de:	91 bd       	out	0x21, r25	; 33
 						
 			// All done charing, reboot for good measure
 			
 			REBOOT();
- 444:	ff cf       	rjmp	.-2      	; 0x444 <__stack+0x1e5>
+ 3e0:	ff cf       	rjmp	.-2      	; 0x3e0 <__stack+0x181>
 			
 		}
 		
 				
 		uint8_t vccx10 = readVccVoltage();				// Capture the current power supply voltage. This takes ~1ms and will be needed multiple times below
- 446:	0d de       	rcall	.-998    	; 0x62 <readVccVoltage>
- 448:	08 2f       	mov	r16, r24
+ 3e2:	3f de       	rcall	.-898    	; 0x62 <readVccVoltage>
+ 3e4:	08 2f       	mov	r16, r24
 		
 		if ( vccx10 <= LOW_BATTERY_VOLTS_COLDx10) {
- 44a:	8f 31       	cpi	r24, 0x1F	; 31
- 44c:	00 f5       	brcc	.+64     	; 0x48e <__stack+0x22f>
+ 3e6:	8f 31       	cpi	r24, 0x1F	; 31
+ 3e8:	00 f5       	brcc	.+64     	; 0x42a <__stack+0x1cb>
 			
 			if ( (currentSpeedStep==0) || ( vccx10 <= LOW_BATTERY_VOLTS_WARMx10) ) {	// Motor off, or running and really low?
- 44e:	cc 23       	and	r28, r28
- 450:	19 f0       	breq	.+6      	; 0x458 <__stack+0x1f9>
- 452:	8d 31       	cpi	r24, 0x1D	; 29
- 454:	08 f0       	brcs	.+2      	; 0x458 <__stack+0x1f9>
- 456:	95 c0       	rjmp	.+298    	; 0x582 <__stack+0x323>
+ 3ea:	cc 23       	and	r28, r28
+ 3ec:	19 f0       	breq	.+6      	; 0x3f4 <__stack+0x195>
+ 3ee:	8d 31       	cpi	r24, 0x1D	; 29
+ 3f0:	08 f0       	brcs	.+2      	; 0x3f4 <__stack+0x195>
+ 3f2:	90 c0       	rjmp	.+288    	; 0x514 <__stack+0x2b5>
 // Turn the motor completely off- disconnects from PWM generator
 
 void motorOff(void) {
 
 		
 	TCCR1A = 0;		// Disconnect Timer1A outputs from pins. "Normal port operation, OC1B disconnected"	
- 458:	1f bc       	out	0x2f, r1	; 47
+ 3f4:	1f bc       	out	0x2f, r1	; 47
 			
 			if ( (currentSpeedStep==0) || ( vccx10 <= LOW_BATTERY_VOLTS_WARMx10) ) {	// Motor off, or running and really low?
 			
 				motorOff();
 			
-				setWhiteLED(0);									// Needed bacuse both LEDs might be on if we are in the middle of a button press
- 45a:	80 e0       	ldi	r24, 0x00	; 0
- 45c:	82 de       	rcall	.-764    	; 0x162 <setWhiteLED>
+				setWhiteLED(0);									// Needed becuase both LEDs might be on if we are in the middle of a button press
+ 3f6:	80 e0       	ldi	r24, 0x00	; 0
+ 3f8:	b4 de       	rcall	.-664    	; 0x162 <setWhiteLED>
 			
 				setRedLED(255);
- 45e:	8f ef       	ldi	r24, 0xFF	; 255
- 460:	8f de       	rcall	.-738    	; 0x180 <setRedLED>
- 462:	ff e3       	ldi	r31, 0x3F	; 63
- 464:	2d e0       	ldi	r18, 0x0D	; 13
- 466:	83 e0       	ldi	r24, 0x03	; 3
- 468:	f1 50       	subi	r31, 0x01	; 1
- 46a:	20 40       	sbci	r18, 0x00	; 0
- 46c:	80 40       	sbci	r24, 0x00	; 0
- 46e:	e1 f7       	brne	.-8      	; 0x468 <__stack+0x209>
- 470:	00 c0       	rjmp	.+0      	; 0x472 <__stack+0x213>
- 472:	00 00       	nop
+ 3fa:	8f ef       	ldi	r24, 0xFF	; 255
+ 3fc:	c1 de       	rcall	.-638    	; 0x180 <setRedLED>
+ 3fe:	9f e3       	ldi	r25, 0x3F	; 63
+ 400:	ed e0       	ldi	r30, 0x0D	; 13
+ 402:	f3 e0       	ldi	r31, 0x03	; 3
+ 404:	91 50       	subi	r25, 0x01	; 1
+ 406:	e0 40       	sbci	r30, 0x00	; 0
+ 408:	f0 40       	sbci	r31, 0x00	; 0
+ 40a:	e1 f7       	brne	.-8      	; 0x404 <__stack+0x1a5>
+ 40c:	00 c0       	rjmp	.+0      	; 0x40e <__stack+0x1af>
+ 40e:	00 00       	nop
 			
 				_delay_ms(LOW_BATTERY_LED_ONTIME_MS);			// Show red LED to user to show low battery
 				
 				while (BUTTON_STATE_DOWN());					// Wait for button to be released if pressed
- 474:	b0 9b       	sbis	0x16, 0	; 22
- 476:	fe cf       	rjmp	.-4      	; 0x474 <__stack+0x215>
+ 410:	b0 9b       	sbis	0x16, 0	; 22
+ 412:	fe cf       	rjmp	.-4      	; 0x410 <__stack+0x1b1>
 																// Will watchdog timeout in 8 seconds if stuff
 				setRedLED(0);
- 478:	80 e0       	ldi	r24, 0x00	; 0
- 47a:	82 de       	rcall	.-764    	; 0x180 <setRedLED>
- 47c:	99 e0       	ldi	r25, 0x09	; 9
- 47e:	88 e1       	ldi	r24, 0x18	; 24
- 480:	0f b6       	in	r0, 0x3f	; 63
- 482:	f8 94       	cli
- 484:	a8 95       	wdr
- 486:	81 bd       	out	0x21, r24	; 33
- 488:	0f be       	out	0x3f, r0	; 63
- 48a:	91 bd       	out	0x21, r25	; 33
+ 414:	80 e0       	ldi	r24, 0x00	; 0
+ 416:	b4 de       	rcall	.-664    	; 0x180 <setRedLED>
+ 418:	99 e0       	ldi	r25, 0x09	; 9
+ 41a:	88 e1       	ldi	r24, 0x18	; 24
+ 41c:	0f b6       	in	r0, 0x3f	; 63
+ 41e:	f8 94       	cli
+ 420:	a8 95       	wdr
+ 422:	81 bd       	out	0x21, r24	; 33
+ 424:	0f be       	out	0x3f, r0	; 63
+ 426:	91 bd       	out	0x21, r25	; 33
 						
 				REBOOT();
- 48c:	ff cf       	rjmp	.-2      	; 0x48c <__stack+0x22d>
+ 428:	ff cf       	rjmp	.-2      	; 0x428 <__stack+0x1c9>
 		}
 
 								
 		uint8_t buttonPressedFlag=0;
 		
 		if (BUTTON_STATE_DOWN())	{		// Button pushed?
- 48e:	b0 99       	sbic	0x16, 0	; 22
- 490:	36 c0       	rjmp	.+108    	; 0x4fe <__stack+0x29f>
+ 42a:	b0 99       	sbic	0x16, 0	; 22
+ 42c:	34 c0       	rjmp	.+104    	; 0x496 <__stack+0x237>
 			
 			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
- 492:	84 e6       	ldi	r24, 0x64	; 100
- 494:	66 de       	rcall	.-820    	; 0x162 <setWhiteLED>
- 496:	e9 e6       	ldi	r30, 0x69	; 105
- 498:	f8 e1       	ldi	r31, 0x18	; 24
- 49a:	31 97       	sbiw	r30, 0x01	; 1
- 49c:	f1 f7       	brne	.-4      	; 0x49a <__stack+0x23b>
- 49e:	00 c0       	rjmp	.+0      	; 0x4a0 <__stack+0x241>
- 4a0:	00 00       	nop
+ 42e:	84 e6       	ldi	r24, 0x64	; 100
+ 430:	98 de       	rcall	.-720    	; 0x162 <setWhiteLED>
+ 432:	89 e6       	ldi	r24, 0x69	; 105
+ 434:	98 e1       	ldi	r25, 0x18	; 24
+ 436:	01 97       	sbiw	r24, 0x01	; 1
+ 438:	f1 f7       	brne	.-4      	; 0x436 <__stack+0x1d7>
+ 43a:	00 c0       	rjmp	.+0      	; 0x43c <__stack+0x1dd>
+ 43c:	00 00       	nop
 			
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);			// debounce going down...
 			
 			if ( currentSpeedStep ==0 ) {				// Special case first press turning on instantly
- 4a2:	c1 11       	cpse	r28, r1
- 4a4:	72 c0       	rjmp	.+228    	; 0x58a <__stack+0x32b>
+ 43e:	c1 11       	cpse	r28, r1
+ 440:	6d c0       	rjmp	.+218    	; 0x51c <__stack+0x2bd>
 				
 				updateMotor( pgm_read_word(&speedSteps[1].top) , pgm_read_word(&speedSteps[1].normailzedDuty), vccx10);		// Set new motor speed
- 4a6:	f5 01       	movw	r30, r10
- 4a8:	65 91       	lpm	r22, Z+
- 4aa:	74 91       	lpm	r23, Z
- 4ac:	f6 01       	movw	r30, r12
- 4ae:	85 91       	lpm	r24, Z+
- 4b0:	94 91       	lpm	r25, Z
- 4b2:	40 2f       	mov	r20, r16
- 4b4:	ed dd       	rcall	.-1062   	; 0x90 <updateMotor>
+ 442:	f5 01       	movw	r30, r10
+ 444:	65 91       	lpm	r22, Z+
+ 446:	74 91       	lpm	r23, Z
+ 448:	f6 01       	movw	r30, r12
+ 44a:	85 91       	lpm	r24, Z+
+ 44c:	94 91       	lpm	r25, Z
+ 44e:	40 2f       	mov	r20, r16
+ 450:	1f de       	rcall	.-962    	; 0x90 <updateMotor>
 
 			}
 			
 			uint16_t buttonDownCount=0;
 			
 			while (BUTTON_STATE_DOWN()) {			// Wait for button to go back up or longpress timeout
- 4b6:	b0 9b       	sbis	0x16, 0	; 22
- 4b8:	12 c0       	rjmp	.+36     	; 0x4de <__stack+0x27f>
- 4ba:	9a c0       	rjmp	.+308    	; 0x5f0 <__stack+0x391>
- 4bc:	21 50       	subi	r18, 0x01	; 1
- 4be:	31 09       	sbc	r19, r1
+ 452:	b0 9b       	sbis	0x16, 0	; 22
+ 454:	10 c0       	rjmp	.+32     	; 0x476 <__stack+0x217>
+ 456:	85 c0       	rjmp	.+266    	; 0x562 <__stack+0x303>
+ 458:	21 50       	subi	r18, 0x01	; 1
+ 45a:	31 09       	sbc	r19, r1
 				
 				if (buttonDownCount++ >= BUTTON_LONG_PRESS_MS ) {		// Long press? Shut motor off
- 4c0:	81 f4       	brne	.+32     	; 0x4e2 <__stack+0x283>
+ 45c:	71 f4       	brne	.+28     	; 0x47a <__stack+0x21b>
 // Turn the motor completely off- disconnects from PWM generator
 
 void motorOff(void) {
 
 		
 	TCCR1A = 0;		// Disconnect Timer1A outputs from pins. "Normal port operation, OC1B disconnected"	
- 4c2:	1f bc       	out	0x2f, r1	; 47
+ 45e:	1f bc       	out	0x2f, r1	; 47
 					// The reboot would do both of these anyway, but we do them redundantly here so UI feels responsive-
 					// The full reboot cycle takes 100+ ms.
 					
 					motorOff();
-					
-					while(BUTTON_STATE_DOWN());		// Wait for the button to be released or watchdog to timeout after 8 secs and reboot us
- 4c4:	b0 9b       	sbis	0x16, 0	; 22
- 4c6:	fe cf       	rjmp	.-4      	; 0x4c4 <__stack+0x265>
-					
+										
 					setWhiteLED(0);
- 4c8:	80 e0       	ldi	r24, 0x00	; 0
- 4ca:	4b de       	rcall	.-874    	; 0x162 <setWhiteLED>
- 4cc:	99 e0       	ldi	r25, 0x09	; 9
- 4ce:	88 e1       	ldi	r24, 0x18	; 24
- 4d0:	0f b6       	in	r0, 0x3f	; 63
- 4d2:	f8 94       	cli
- 4d4:	a8 95       	wdr
- 4d6:	81 bd       	out	0x21, r24	; 33
- 4d8:	0f be       	out	0x3f, r0	; 63
- 4da:	91 bd       	out	0x21, r25	; 33
+ 460:	80 e0       	ldi	r24, 0x00	; 0
+ 462:	7f de       	rcall	.-770    	; 0x162 <setWhiteLED>
+ 464:	99 e0       	ldi	r25, 0x09	; 9
+ 466:	88 e1       	ldi	r24, 0x18	; 24
+ 468:	0f b6       	in	r0, 0x3f	; 63
+ 46a:	f8 94       	cli
+ 46c:	a8 95       	wdr
+ 46e:	81 bd       	out	0x21, r24	; 33
+ 470:	0f be       	out	0x3f, r0	; 63
+ 472:	91 bd       	out	0x21, r25	; 33
 					
 					REBOOT();
- 4dc:	ff cf       	rjmp	.-2      	; 0x4dc <__stack+0x27d>
+ 474:	ff cf       	rjmp	.-2      	; 0x474 <__stack+0x215>
 			REBOOT();
 			
 		}
 		
 				
 		if (CIP_STATE_ACTIVE())		{		// Charging?
- 4de:	29 2d       	mov	r18, r9
- 4e0:	3e 2d       	mov	r19, r14
- 4e2:	89 ef       	ldi	r24, 0xF9	; 249
- 4e4:	90 e0       	ldi	r25, 0x00	; 0
- 4e6:	01 97       	sbiw	r24, 0x01	; 1
- 4e8:	f1 f7       	brne	.-4      	; 0x4e6 <__stack+0x287>
- 4ea:	00 c0       	rjmp	.+0      	; 0x4ec <__stack+0x28d>
- 4ec:	00 00       	nop
+ 476:	29 2d       	mov	r18, r9
+ 478:	3e 2d       	mov	r19, r14
+ 47a:	e9 ef       	ldi	r30, 0xF9	; 249
+ 47c:	f0 e0       	ldi	r31, 0x00	; 0
+ 47e:	31 97       	sbiw	r30, 0x01	; 1
+ 480:	f1 f7       	brne	.-4      	; 0x47e <__stack+0x21f>
+ 482:	00 c0       	rjmp	.+0      	; 0x484 <__stack+0x225>
+ 484:	00 00       	nop
 
 			}
 			
 			uint16_t buttonDownCount=0;
 			
 			while (BUTTON_STATE_DOWN()) {			// Wait for button to go back up or longpress timeout
- 4ee:	b0 9b       	sbis	0x16, 0	; 22
- 4f0:	e5 cf       	rjmp	.-54     	; 0x4bc <__stack+0x25d>
+ 486:	b0 9b       	sbis	0x16, 0	; 22
+ 488:	e7 cf       	rjmp	.-50     	; 0x458 <__stack+0x1f9>
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
 												
 			currentSpeedStep++;
- 4f2:	cf 5f       	subi	r28, 0xFF	; 255
+ 48a:	cf 5f       	subi	r28, 0xFF	; 255
 			
 			if (currentSpeedStep >= SPEED_STEP_COUNT )	{ // Cycled all the Way around?
- 4f4:	c4 30       	cpi	r28, 0x04	; 4
- 4f6:	28 f0       	brcs	.+10     	; 0x502 <__stack+0x2a3>
+ 48c:	c4 30       	cpi	r28, 0x04	; 4
+ 48e:	28 f0       	brcs	.+10     	; 0x49a <__stack+0x23b>
 				
 			}
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
- 4f8:	df 2d       	mov	r29, r15
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
+ 490:	df 2d       	mov	r29, r15
 												
 			currentSpeedStep++;
 			
 			if (currentSpeedStep >= SPEED_STEP_COUNT )	{ // Cycled all the Way around?
 								
 				currentSpeedStep=0;
- 4fa:	c1 2f       	mov	r28, r17
- 4fc:	03 c0       	rjmp	.+6      	; 0x504 <__stack+0x2a5>
+ 492:	c1 2f       	mov	r28, r17
+ 494:	03 c0       	rjmp	.+6      	; 0x49c <__stack+0x23d>
 				
 			}
 		}
 
 								
 		uint8_t buttonPressedFlag=0;
- 4fe:	d1 2f       	mov	r29, r17
- 500:	01 c0       	rjmp	.+2      	; 0x504 <__stack+0x2a5>
+ 496:	d1 2f       	mov	r29, r17
+ 498:	01 c0       	rjmp	.+2      	; 0x49c <__stack+0x23d>
 				
 			}
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
- 502:	df 2d       	mov	r29, r15
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
+ 49a:	df 2d       	mov	r29, r15
 				
 			}
 						
 		}
 											
 		updateMotor( pgm_read_word(&speedSteps[currentSpeedStep].top) , pgm_read_word(&speedSteps[currentSpeedStep].normailzedDuty), vccx10);		// Set new motor speed
- 504:	8c 2f       	mov	r24, r28
- 506:	90 e0       	ldi	r25, 0x00	; 0
- 508:	88 0f       	add	r24, r24
- 50a:	99 1f       	adc	r25, r25
- 50c:	88 0f       	add	r24, r24
- 50e:	99 1f       	adc	r25, r25
- 510:	fc 01       	movw	r30, r24
- 512:	ee 5d       	subi	r30, 0xDE	; 222
- 514:	ff 4f       	sbci	r31, 0xFF	; 255
- 516:	65 91       	lpm	r22, Z+
- 518:	74 91       	lpm	r23, Z
- 51a:	8c 5d       	subi	r24, 0xDC	; 220
- 51c:	9f 4f       	sbci	r25, 0xFF	; 255
- 51e:	fc 01       	movw	r30, r24
- 520:	85 91       	lpm	r24, Z+
- 522:	94 91       	lpm	r25, Z
- 524:	40 2f       	mov	r20, r16
- 526:	b4 dd       	rcall	.-1176   	; 0x90 <updateMotor>
+ 49c:	8c 2f       	mov	r24, r28
+ 49e:	90 e0       	ldi	r25, 0x00	; 0
+ 4a0:	88 0f       	add	r24, r24
+ 4a2:	99 1f       	adc	r25, r25
+ 4a4:	88 0f       	add	r24, r24
+ 4a6:	99 1f       	adc	r25, r25
+ 4a8:	fc 01       	movw	r30, r24
+ 4aa:	ee 5d       	subi	r30, 0xDE	; 222
+ 4ac:	ff 4f       	sbci	r31, 0xFF	; 255
+ 4ae:	65 91       	lpm	r22, Z+
+ 4b0:	74 91       	lpm	r23, Z
+ 4b2:	8c 5d       	subi	r24, 0xDC	; 220
+ 4b4:	9f 4f       	sbci	r25, 0xFF	; 255
+ 4b6:	fc 01       	movw	r30, r24
+ 4b8:	85 91       	lpm	r24, Z+
+ 4ba:	94 91       	lpm	r25, Z
+ 4bc:	40 2f       	mov	r20, r16
+ 4be:	e8 dd       	rcall	.-1072   	; 0x90 <updateMotor>
 		
 		if (buttonPressedFlag) {
- 528:	dd 23       	and	r29, r29
- 52a:	41 f0       	breq	.+16     	; 0x53c <__stack+0x2dd>
+ 4c0:	dd 23       	and	r29, r29
+ 4c2:	41 f0       	breq	.+16     	; 0x4d4 <__stack+0x275>
 			
 			// Button released, white LED off again
 			
 			setWhiteLED(0);
- 52c:	81 2f       	mov	r24, r17
- 52e:	19 de       	rcall	.-974    	; 0x162 <setWhiteLED>
- 530:	e9 e6       	ldi	r30, 0x69	; 105
- 532:	f8 e1       	ldi	r31, 0x18	; 24
- 534:	31 97       	sbiw	r30, 0x01	; 1
- 536:	f1 f7       	brne	.-4      	; 0x534 <__stack+0x2d5>
- 538:	00 c0       	rjmp	.+0      	; 0x53a <__stack+0x2db>
- 53a:	00 00       	nop
+ 4c4:	81 2f       	mov	r24, r17
+ 4c6:	4d de       	rcall	.-870    	; 0x162 <setWhiteLED>
+ 4c8:	89 e6       	ldi	r24, 0x69	; 105
+ 4ca:	98 e1       	ldi	r25, 0x18	; 24
+ 4cc:	01 97       	sbiw	r24, 0x01	; 1
+ 4ce:	f1 f7       	brne	.-4      	; 0x4cc <__stack+0x26d>
+ 4d0:	00 c0       	rjmp	.+0      	; 0x4d2 <__stack+0x273>
+ 4d2:	00 00       	nop
 			_delay_ms(BUTTON_DEBOUNCE_TIME_MS);		// debounce the button returning back up
 			
 			
 		}
 		
 		if (currentSpeedStep==0) {		// Either we stepped though the settings back to off, or we got a spurious wake up
- 53c:	c1 11       	cpse	r28, r1
- 53e:	09 c0       	rjmp	.+18     	; 0x552 <__stack+0x2f3>
- 540:	99 e0       	ldi	r25, 0x09	; 9
- 542:	88 e1       	ldi	r24, 0x18	; 24
- 544:	0f b6       	in	r0, 0x3f	; 63
- 546:	f8 94       	cli
- 548:	a8 95       	wdr
- 54a:	81 bd       	out	0x21, r24	; 33
- 54c:	0f be       	out	0x3f, r0	; 63
- 54e:	91 bd       	out	0x21, r25	; 33
+ 4d4:	c1 11       	cpse	r28, r1
+ 4d6:	09 c0       	rjmp	.+18     	; 0x4ea <__stack+0x28b>
+ 4d8:	99 e0       	ldi	r25, 0x09	; 9
+ 4da:	88 e1       	ldi	r24, 0x18	; 24
+ 4dc:	0f b6       	in	r0, 0x3f	; 63
+ 4de:	f8 94       	cli
+ 4e0:	a8 95       	wdr
+ 4e2:	81 bd       	out	0x21, r24	; 33
+ 4e4:	0f be       	out	0x3f, r0	; 63
+ 4e6:	91 bd       	out	0x21, r25	; 33
 			REBOOT();	
- 550:	ff cf       	rjmp	.-2      	; 0x550 <__stack+0x2f1>
+ 4e8:	ff cf       	rjmp	.-2      	; 0x4e8 <__stack+0x289>
 							
 
 		// If we get to here, then we check for a low battery and had the chance to reboot if we found one,
 		// so ok to postpone reset...		
 		
 		wdt_reset();
- 552:	a8 95       	wdr
+ 4ea:	a8 95       	wdr
 		// This main loop runs for as long as the motor is on. 
 		// It can be terminated by battery charger change of state, low battery detection, button press back to 0 speed, or long button press
 		// All these changes terminate the loop in a reboot. 
 		
 		
 		if (EOC_STATE_ACTIVE())		{		// End of charge?
- 554:	c8 99       	sbic	0x19, 0	; 25
- 556:	4a cf       	rjmp	.-364    	; 0x3ec <__stack+0x18d>
- 558:	33 cf       	rjmp	.-410    	; 0x3c0 <__stack+0x161>
+ 4ec:	c8 99       	sbic	0x19, 0	; 25
+ 4ee:	4c cf       	rjmp	.-360    	; 0x388 <__stack+0x129>
+ 4f0:	35 cf       	rjmp	.-406    	; 0x35c <__stack+0xfd>
 		// Otherwise we just reset and the button was down when we woke, so likely it is stuck down 
 		// and that is what caused the reset. In this case, show the user and then eventually disable the button.
 		
 		// Each pass of this loop takes ~1 sec.
 		
-		for( uint16_t t=0; (t <= BUTTON_TRANSITMODE_TIMEOUT) && BUTTON_STATE_DOWN(); t++ ) {
- 55a:	b0 9b       	sbis	0x16, 0	; 22
- 55c:	7b ce       	rjmp	.-778    	; 0x254 <main+0xb2>
- 55e:	80 ce       	rjmp	.-768    	; 0x260 <__stack+0x1>
+		for( uint16_t t=0; (t <= BUTTON_TRANSIT_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
+ 4f2:	b0 9b       	sbis	0x16, 0	; 22
+ 4f4:	9e ce       	rjmp	.-708    	; 0x232 <main+0x90>
+ 4f6:	c3 ce       	rjmp	.-634    	; 0x27e <__stack+0x1f>
 	}
 												
 	// Ready to begin normal operation!	
 	
 	
 	if (BUTTON_STATE_DOWN())	{		// Possible stuck button?
- 560:	b0 9b       	sbis	0x16, 0	; 22
- 562:	fb cf       	rjmp	.-10     	; 0x55a <__stack+0x2fb>
- 564:	e8 ce       	rjmp	.-560    	; 0x336 <__stack+0xd7>
-			wdt_reset();
-			
-		}
-		
-		
-		for( uint16_t t=0; (t <= BUTTON_STUCK_TIMEOUT_S) && BUTTON_STATE_DOWN(); t++ ) {
- 566:	b0 9b       	sbis	0x16, 0	; 22
- 568:	b8 ce       	rjmp	.-656    	; 0x2da <__stack+0x7b>
- 56a:	dd ce       	rjmp	.-582    	; 0x326 <__stack+0xc7>
+ 4f8:	b0 9b       	sbis	0x16, 0	; 22
+ 4fa:	fb cf       	rjmp	.-10     	; 0x4f2 <__stack+0x293>
+ 4fc:	c8 ce       	rjmp	.-624    	; 0x28e <__stack+0x2f>
 								
 		uint8_t buttonPressedFlag=0;
 		
 		if (BUTTON_STATE_DOWN())	{		// Button pushed?
 			
 			setWhiteLED(BUTTON_FEEDBACK_BRIGHTNESS);
- 56c:	84 e6       	ldi	r24, 0x64	; 100
- 56e:	f9 dd       	rcall	.-1038   	; 0x162 <setWhiteLED>
- 570:	89 e6       	ldi	r24, 0x69	; 105
- 572:	98 e1       	ldi	r25, 0x18	; 24
- 574:	01 97       	sbiw	r24, 0x01	; 1
- 576:	f1 f7       	brne	.-4      	; 0x574 <__stack+0x315>
- 578:	00 c0       	rjmp	.+0      	; 0x57a <__stack+0x31b>
- 57a:	00 00       	nop
+ 4fe:	84 e6       	ldi	r24, 0x64	; 100
+ 500:	30 de       	rcall	.-928    	; 0x162 <setWhiteLED>
+ 502:	e9 e6       	ldi	r30, 0x69	; 105
+ 504:	f8 e1       	ldi	r31, 0x18	; 24
+ 506:	31 97       	sbiw	r30, 0x01	; 1
+ 508:	f1 f7       	brne	.-4      	; 0x506 <__stack+0x2a7>
+ 50a:	00 c0       	rjmp	.+0      	; 0x50c <__stack+0x2ad>
+ 50c:	00 00       	nop
 
 			}
 			
 			uint16_t buttonDownCount=0;
 			
 			while (BUTTON_STATE_DOWN()) {			// Wait for button to go back up or longpress timeout
- 57c:	b0 9b       	sbis	0x16, 0	; 22
- 57e:	af cf       	rjmp	.-162    	; 0x4de <__stack+0x27f>
- 580:	b8 cf       	rjmp	.-144    	; 0x4f2 <__stack+0x293>
+ 50e:	b0 9b       	sbis	0x16, 0	; 22
+ 510:	b2 cf       	rjmp	.-156    	; 0x476 <__stack+0x217>
+ 512:	bb cf       	rjmp	.-138    	; 0x48a <__stack+0x22b>
 		}
 
 								
 		uint8_t buttonPressedFlag=0;
 		
 		if (BUTTON_STATE_DOWN())	{		// Button pushed?
- 582:	b0 9b       	sbis	0x16, 0	; 22
- 584:	f3 cf       	rjmp	.-26     	; 0x56c <__stack+0x30d>
+ 514:	b0 9b       	sbis	0x16, 0	; 22
+ 516:	f3 cf       	rjmp	.-26     	; 0x4fe <__stack+0x29f>
 				
 			}
 		}
 
 								
 		uint8_t buttonPressedFlag=0;
- 586:	d1 2f       	mov	r29, r17
- 588:	bd cf       	rjmp	.-134    	; 0x504 <__stack+0x2a5>
+ 518:	d1 2f       	mov	r29, r17
+ 51a:	c0 cf       	rjmp	.-128    	; 0x49c <__stack+0x23d>
 
 			}
 			
 			uint16_t buttonDownCount=0;
 			
 			while (BUTTON_STATE_DOWN()) {			// Wait for button to go back up or longpress timeout
- 58a:	b0 9b       	sbis	0x16, 0	; 22
- 58c:	a8 cf       	rjmp	.-176    	; 0x4de <__stack+0x27f>
- 58e:	b1 cf       	rjmp	.-158    	; 0x4f2 <__stack+0x293>
- 590:	e3 ec       	ldi	r30, 0xC3	; 195
- 592:	f9 e0       	ldi	r31, 0x09	; 9
- 594:	31 97       	sbiw	r30, 0x01	; 1
- 596:	f1 f7       	brne	.-4      	; 0x594 <__stack+0x335>
- 598:	00 c0       	rjmp	.+0      	; 0x59a <__stack+0x33b>
- 59a:	00 00       	nop
- 59c:	81 2f       	mov	r24, r17
- 59e:	bc ce       	rjmp	.-648    	; 0x318 <__stack+0xb9>
- 5a0:	83 ec       	ldi	r24, 0xC3	; 195
- 5a2:	99 e0       	ldi	r25, 0x09	; 9
- 5a4:	01 97       	sbiw	r24, 0x01	; 1
- 5a6:	f1 f7       	brne	.-4      	; 0x5a4 <__stack+0x345>
- 5a8:	00 c0       	rjmp	.+0      	; 0x5aa <__stack+0x34b>
- 5aa:	00 00       	nop
- 5ac:	89 e5       	ldi	r24, 0x59	; 89
- 5ae:	a5 ce       	rjmp	.-694    	; 0x2fa <__stack+0x9b>
- 5b0:	e3 ec       	ldi	r30, 0xC3	; 195
- 5b2:	f9 e0       	ldi	r31, 0x09	; 9
- 5b4:	31 97       	sbiw	r30, 0x01	; 1
- 5b6:	f1 f7       	brne	.-4      	; 0x5b4 <__stack+0x355>
- 5b8:	00 c0       	rjmp	.+0      	; 0x5ba <__stack+0x35b>
- 5ba:	00 00       	nop
- 5bc:	89 2f       	mov	r24, r25
- 5be:	7d ce       	rjmp	.-774    	; 0x2ba <__stack+0x5b>
- 5c0:	e3 ec       	ldi	r30, 0xC3	; 195
- 5c2:	f9 e0       	ldi	r31, 0x09	; 9
- 5c4:	31 97       	sbiw	r30, 0x01	; 1
- 5c6:	f1 f7       	brne	.-4      	; 0x5c4 <__stack+0x365>
- 5c8:	00 c0       	rjmp	.+0      	; 0x5ca <__stack+0x36b>
- 5ca:	00 00       	nop
- 5cc:	89 2f       	mov	r24, r25
- 5ce:	39 ce       	rjmp	.-910    	; 0x242 <main+0xa0>
- 5d0:	89 ef       	ldi	r24, 0xF9	; 249
- 5d2:	90 e0       	ldi	r25, 0x00	; 0
- 5d4:	01 97       	sbiw	r24, 0x01	; 1
- 5d6:	f1 f7       	brne	.-4      	; 0x5d4 <__stack+0x375>
- 5d8:	00 c0       	rjmp	.+0      	; 0x5da <__stack+0x37b>
- 5da:	00 00       	nop
- 5dc:	8d 2f       	mov	r24, r29
- 5de:	19 ce       	rjmp	.-974    	; 0x212 <main+0x70>
- 5e0:	e9 ef       	ldi	r30, 0xF9	; 249
- 5e2:	f0 e0       	ldi	r31, 0x00	; 0
- 5e4:	31 97       	sbiw	r30, 0x01	; 1
- 5e6:	f1 f7       	brne	.-4      	; 0x5e4 <__stack+0x385>
- 5e8:	00 c0       	rjmp	.+0      	; 0x5ea <__stack+0x38b>
- 5ea:	00 00       	nop
- 5ec:	8d 2f       	mov	r24, r29
- 5ee:	00 ce       	rjmp	.-1024   	; 0x1f0 <main+0x4e>
+ 51c:	b0 9b       	sbis	0x16, 0	; 22
+ 51e:	ab cf       	rjmp	.-170    	; 0x476 <__stack+0x217>
+ 520:	b4 cf       	rjmp	.-152    	; 0x48a <__stack+0x22b>
+ 522:	83 ec       	ldi	r24, 0xC3	; 195
+ 524:	99 e0       	ldi	r25, 0x09	; 9
+ 526:	01 97       	sbiw	r24, 0x01	; 1
+ 528:	f1 f7       	brne	.-4      	; 0x526 <__stack+0x2c7>
+ 52a:	00 c0       	rjmp	.+0      	; 0x52c <__stack+0x2cd>
+ 52c:	00 00       	nop
+ 52e:	81 2f       	mov	r24, r17
+ 530:	9f ce       	rjmp	.-706    	; 0x270 <__stack+0x11>
+ 532:	e3 ec       	ldi	r30, 0xC3	; 195
+ 534:	f9 e0       	ldi	r31, 0x09	; 9
+ 536:	31 97       	sbiw	r30, 0x01	; 1
+ 538:	f1 f7       	brne	.-4      	; 0x536 <__stack+0x2d7>
+ 53a:	00 c0       	rjmp	.+0      	; 0x53c <__stack+0x2dd>
+ 53c:	00 00       	nop
+ 53e:	89 e5       	ldi	r24, 0x59	; 89
+ 540:	88 ce       	rjmp	.-752    	; 0x252 <main+0xb0>
+ 542:	89 ef       	ldi	r24, 0xF9	; 249
+ 544:	90 e0       	ldi	r25, 0x00	; 0
+ 546:	01 97       	sbiw	r24, 0x01	; 1
+ 548:	f1 f7       	brne	.-4      	; 0x546 <__stack+0x2e7>
+ 54a:	00 c0       	rjmp	.+0      	; 0x54c <__stack+0x2ed>
+ 54c:	00 00       	nop
+ 54e:	8d 2f       	mov	r24, r29
+ 550:	60 ce       	rjmp	.-832    	; 0x212 <main+0x70>
+ 552:	e9 ef       	ldi	r30, 0xF9	; 249
+ 554:	f0 e0       	ldi	r31, 0x00	; 0
+ 556:	31 97       	sbiw	r30, 0x01	; 1
+ 558:	f1 f7       	brne	.-4      	; 0x556 <__stack+0x2f7>
+ 55a:	00 c0       	rjmp	.+0      	; 0x55c <__stack+0x2fd>
+ 55c:	00 00       	nop
+ 55e:	8d 2f       	mov	r24, r29
+ 560:	47 ce       	rjmp	.-882    	; 0x1f0 <main+0x4e>
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
 												
 			currentSpeedStep++;
- 5f0:	cf 5f       	subi	r28, 0xFF	; 255
+ 562:	cf 5f       	subi	r28, 0xFF	; 255
 				
 			}
 			
 			// Pressed less than a long press
 			
-			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels resposive
- 5f2:	df 2d       	mov	r29, r15
- 5f4:	87 cf       	rjmp	.-242    	; 0x504 <__stack+0x2a5>
+			buttonPressedFlag=1;		// Debounce after setting new motor speed so UI feels responsive
+ 564:	df 2d       	mov	r29, r15
+ 566:	9a cf       	rjmp	.-204    	; 0x49c <__stack+0x23d>
 
-000005f6 <__udivmodhi4>:
- 5f6:	aa 1b       	sub	r26, r26
- 5f8:	bb 1b       	sub	r27, r27
- 5fa:	51 e1       	ldi	r21, 0x11	; 17
- 5fc:	07 c0       	rjmp	.+14     	; 0x60c <__udivmodhi4_ep>
+00000568 <__udivmodhi4>:
+ 568:	aa 1b       	sub	r26, r26
+ 56a:	bb 1b       	sub	r27, r27
+ 56c:	51 e1       	ldi	r21, 0x11	; 17
+ 56e:	07 c0       	rjmp	.+14     	; 0x57e <__udivmodhi4_ep>
 
-000005fe <__udivmodhi4_loop>:
- 5fe:	aa 1f       	adc	r26, r26
- 600:	bb 1f       	adc	r27, r27
- 602:	a6 17       	cp	r26, r22
- 604:	b7 07       	cpc	r27, r23
- 606:	10 f0       	brcs	.+4      	; 0x60c <__udivmodhi4_ep>
- 608:	a6 1b       	sub	r26, r22
- 60a:	b7 0b       	sbc	r27, r23
+00000570 <__udivmodhi4_loop>:
+ 570:	aa 1f       	adc	r26, r26
+ 572:	bb 1f       	adc	r27, r27
+ 574:	a6 17       	cp	r26, r22
+ 576:	b7 07       	cpc	r27, r23
+ 578:	10 f0       	brcs	.+4      	; 0x57e <__udivmodhi4_ep>
+ 57a:	a6 1b       	sub	r26, r22
+ 57c:	b7 0b       	sbc	r27, r23
 
-0000060c <__udivmodhi4_ep>:
- 60c:	88 1f       	adc	r24, r24
- 60e:	99 1f       	adc	r25, r25
- 610:	5a 95       	dec	r21
- 612:	a9 f7       	brne	.-22     	; 0x5fe <__udivmodhi4_loop>
- 614:	80 95       	com	r24
- 616:	90 95       	com	r25
- 618:	bc 01       	movw	r22, r24
- 61a:	cd 01       	movw	r24, r26
- 61c:	08 95       	ret
+0000057e <__udivmodhi4_ep>:
+ 57e:	88 1f       	adc	r24, r24
+ 580:	99 1f       	adc	r25, r25
+ 582:	5a 95       	dec	r21
+ 584:	a9 f7       	brne	.-22     	; 0x570 <__udivmodhi4_loop>
+ 586:	80 95       	com	r24
+ 588:	90 95       	com	r25
+ 58a:	bc 01       	movw	r22, r24
+ 58c:	cd 01       	movw	r24, r26
+ 58e:	08 95       	ret
 
-0000061e <__udivmodsi4>:
- 61e:	a1 e2       	ldi	r26, 0x21	; 33
- 620:	1a 2e       	mov	r1, r26
- 622:	aa 1b       	sub	r26, r26
- 624:	bb 1b       	sub	r27, r27
- 626:	fd 01       	movw	r30, r26
- 628:	0d c0       	rjmp	.+26     	; 0x644 <__udivmodsi4_ep>
+00000590 <__udivmodsi4>:
+ 590:	a1 e2       	ldi	r26, 0x21	; 33
+ 592:	1a 2e       	mov	r1, r26
+ 594:	aa 1b       	sub	r26, r26
+ 596:	bb 1b       	sub	r27, r27
+ 598:	fd 01       	movw	r30, r26
+ 59a:	0d c0       	rjmp	.+26     	; 0x5b6 <__udivmodsi4_ep>
 
-0000062a <__udivmodsi4_loop>:
- 62a:	aa 1f       	adc	r26, r26
- 62c:	bb 1f       	adc	r27, r27
- 62e:	ee 1f       	adc	r30, r30
- 630:	ff 1f       	adc	r31, r31
- 632:	a2 17       	cp	r26, r18
- 634:	b3 07       	cpc	r27, r19
- 636:	e4 07       	cpc	r30, r20
- 638:	f5 07       	cpc	r31, r21
- 63a:	20 f0       	brcs	.+8      	; 0x644 <__udivmodsi4_ep>
- 63c:	a2 1b       	sub	r26, r18
- 63e:	b3 0b       	sbc	r27, r19
- 640:	e4 0b       	sbc	r30, r20
- 642:	f5 0b       	sbc	r31, r21
+0000059c <__udivmodsi4_loop>:
+ 59c:	aa 1f       	adc	r26, r26
+ 59e:	bb 1f       	adc	r27, r27
+ 5a0:	ee 1f       	adc	r30, r30
+ 5a2:	ff 1f       	adc	r31, r31
+ 5a4:	a2 17       	cp	r26, r18
+ 5a6:	b3 07       	cpc	r27, r19
+ 5a8:	e4 07       	cpc	r30, r20
+ 5aa:	f5 07       	cpc	r31, r21
+ 5ac:	20 f0       	brcs	.+8      	; 0x5b6 <__udivmodsi4_ep>
+ 5ae:	a2 1b       	sub	r26, r18
+ 5b0:	b3 0b       	sbc	r27, r19
+ 5b2:	e4 0b       	sbc	r30, r20
+ 5b4:	f5 0b       	sbc	r31, r21
 
-00000644 <__udivmodsi4_ep>:
- 644:	66 1f       	adc	r22, r22
- 646:	77 1f       	adc	r23, r23
- 648:	88 1f       	adc	r24, r24
- 64a:	99 1f       	adc	r25, r25
- 64c:	1a 94       	dec	r1
- 64e:	69 f7       	brne	.-38     	; 0x62a <__udivmodsi4_loop>
- 650:	60 95       	com	r22
- 652:	70 95       	com	r23
- 654:	80 95       	com	r24
- 656:	90 95       	com	r25
- 658:	9b 01       	movw	r18, r22
- 65a:	ac 01       	movw	r20, r24
- 65c:	bd 01       	movw	r22, r26
- 65e:	cf 01       	movw	r24, r30
- 660:	08 95       	ret
+000005b6 <__udivmodsi4_ep>:
+ 5b6:	66 1f       	adc	r22, r22
+ 5b8:	77 1f       	adc	r23, r23
+ 5ba:	88 1f       	adc	r24, r24
+ 5bc:	99 1f       	adc	r25, r25
+ 5be:	1a 94       	dec	r1
+ 5c0:	69 f7       	brne	.-38     	; 0x59c <__udivmodsi4_loop>
+ 5c2:	60 95       	com	r22
+ 5c4:	70 95       	com	r23
+ 5c6:	80 95       	com	r24
+ 5c8:	90 95       	com	r25
+ 5ca:	9b 01       	movw	r18, r22
+ 5cc:	ac 01       	movw	r20, r24
+ 5ce:	bd 01       	movw	r22, r26
+ 5d0:	cf 01       	movw	r24, r30
+ 5d2:	08 95       	ret
 
-00000662 <__mulsidi3>:
- 662:	68 94       	set
- 664:	00 13       	cpse	r16, r16
+000005d4 <__mulsidi3>:
+ 5d4:	68 94       	set
+ 5d6:	00 13       	cpse	r16, r16
 
-00000666 <__umulsidi3>:
- 666:	e8 94       	clt
- 668:	a0 e0       	ldi	r26, 0x00	; 0
- 66a:	b0 e0       	ldi	r27, 0x00	; 0
- 66c:	e9 e3       	ldi	r30, 0x39	; 57
- 66e:	f3 e0       	ldi	r31, 0x03	; 3
- 670:	1d c0       	rjmp	.+58     	; 0x6ac <__prologue_saves__+0x10>
- 672:	ef ef       	ldi	r30, 0xFF	; 255
- 674:	e7 f9       	bld	r30, 7
- 676:	59 01       	movw	r10, r18
- 678:	6a 01       	movw	r12, r20
- 67a:	5e 23       	and	r21, r30
- 67c:	55 0f       	add	r21, r21
- 67e:	ee 08       	sbc	r14, r14
- 680:	fe 2c       	mov	r15, r14
- 682:	87 01       	movw	r16, r14
- 684:	9b 01       	movw	r18, r22
- 686:	ac 01       	movw	r20, r24
- 688:	9e 23       	and	r25, r30
- 68a:	99 0f       	add	r25, r25
- 68c:	66 0b       	sbc	r22, r22
- 68e:	76 2f       	mov	r23, r22
- 690:	cb 01       	movw	r24, r22
- 692:	3b d0       	rcall	.+118    	; 0x70a <__muldi3>
- 694:	cd b7       	in	r28, 0x3d	; 61
- 696:	de b7       	in	r29, 0x3e	; 62
- 698:	ea e0       	ldi	r30, 0x0A	; 10
- 69a:	24 c0       	rjmp	.+72     	; 0x6e4 <__epilogue_restores__+0x10>
+000005d8 <__umulsidi3>:
+ 5d8:	e8 94       	clt
+ 5da:	a0 e0       	ldi	r26, 0x00	; 0
+ 5dc:	b0 e0       	ldi	r27, 0x00	; 0
+ 5de:	e2 ef       	ldi	r30, 0xF2	; 242
+ 5e0:	f2 e0       	ldi	r31, 0x02	; 2
+ 5e2:	1d c0       	rjmp	.+58     	; 0x61e <__prologue_saves__+0x10>
+ 5e4:	ef ef       	ldi	r30, 0xFF	; 255
+ 5e6:	e7 f9       	bld	r30, 7
+ 5e8:	59 01       	movw	r10, r18
+ 5ea:	6a 01       	movw	r12, r20
+ 5ec:	5e 23       	and	r21, r30
+ 5ee:	55 0f       	add	r21, r21
+ 5f0:	ee 08       	sbc	r14, r14
+ 5f2:	fe 2c       	mov	r15, r14
+ 5f4:	87 01       	movw	r16, r14
+ 5f6:	9b 01       	movw	r18, r22
+ 5f8:	ac 01       	movw	r20, r24
+ 5fa:	9e 23       	and	r25, r30
+ 5fc:	99 0f       	add	r25, r25
+ 5fe:	66 0b       	sbc	r22, r22
+ 600:	76 2f       	mov	r23, r22
+ 602:	cb 01       	movw	r24, r22
+ 604:	3b d0       	rcall	.+118    	; 0x67c <__muldi3>
+ 606:	cd b7       	in	r28, 0x3d	; 61
+ 608:	de b7       	in	r29, 0x3e	; 62
+ 60a:	ea e0       	ldi	r30, 0x0A	; 10
+ 60c:	24 c0       	rjmp	.+72     	; 0x656 <__epilogue_restores__+0x10>
 
-0000069c <__prologue_saves__>:
- 69c:	2f 92       	push	r2
- 69e:	3f 92       	push	r3
- 6a0:	4f 92       	push	r4
- 6a2:	5f 92       	push	r5
- 6a4:	6f 92       	push	r6
- 6a6:	7f 92       	push	r7
- 6a8:	8f 92       	push	r8
- 6aa:	9f 92       	push	r9
- 6ac:	af 92       	push	r10
- 6ae:	bf 92       	push	r11
- 6b0:	cf 92       	push	r12
- 6b2:	df 92       	push	r13
- 6b4:	ef 92       	push	r14
- 6b6:	ff 92       	push	r15
- 6b8:	0f 93       	push	r16
- 6ba:	1f 93       	push	r17
- 6bc:	cf 93       	push	r28
- 6be:	df 93       	push	r29
- 6c0:	cd b7       	in	r28, 0x3d	; 61
- 6c2:	de b7       	in	r29, 0x3e	; 62
- 6c4:	ca 1b       	sub	r28, r26
- 6c6:	db 0b       	sbc	r29, r27
- 6c8:	0f b6       	in	r0, 0x3f	; 63
- 6ca:	f8 94       	cli
- 6cc:	de bf       	out	0x3e, r29	; 62
- 6ce:	0f be       	out	0x3f, r0	; 63
- 6d0:	cd bf       	out	0x3d, r28	; 61
- 6d2:	09 94       	ijmp
+0000060e <__prologue_saves__>:
+ 60e:	2f 92       	push	r2
+ 610:	3f 92       	push	r3
+ 612:	4f 92       	push	r4
+ 614:	5f 92       	push	r5
+ 616:	6f 92       	push	r6
+ 618:	7f 92       	push	r7
+ 61a:	8f 92       	push	r8
+ 61c:	9f 92       	push	r9
+ 61e:	af 92       	push	r10
+ 620:	bf 92       	push	r11
+ 622:	cf 92       	push	r12
+ 624:	df 92       	push	r13
+ 626:	ef 92       	push	r14
+ 628:	ff 92       	push	r15
+ 62a:	0f 93       	push	r16
+ 62c:	1f 93       	push	r17
+ 62e:	cf 93       	push	r28
+ 630:	df 93       	push	r29
+ 632:	cd b7       	in	r28, 0x3d	; 61
+ 634:	de b7       	in	r29, 0x3e	; 62
+ 636:	ca 1b       	sub	r28, r26
+ 638:	db 0b       	sbc	r29, r27
+ 63a:	0f b6       	in	r0, 0x3f	; 63
+ 63c:	f8 94       	cli
+ 63e:	de bf       	out	0x3e, r29	; 62
+ 640:	0f be       	out	0x3f, r0	; 63
+ 642:	cd bf       	out	0x3d, r28	; 61
+ 644:	09 94       	ijmp
 
-000006d4 <__epilogue_restores__>:
- 6d4:	2a 88       	ldd	r2, Y+18	; 0x12
- 6d6:	39 88       	ldd	r3, Y+17	; 0x11
- 6d8:	48 88       	ldd	r4, Y+16	; 0x10
- 6da:	5f 84       	ldd	r5, Y+15	; 0x0f
- 6dc:	6e 84       	ldd	r6, Y+14	; 0x0e
- 6de:	7d 84       	ldd	r7, Y+13	; 0x0d
- 6e0:	8c 84       	ldd	r8, Y+12	; 0x0c
- 6e2:	9b 84       	ldd	r9, Y+11	; 0x0b
- 6e4:	aa 84       	ldd	r10, Y+10	; 0x0a
- 6e6:	b9 84       	ldd	r11, Y+9	; 0x09
- 6e8:	c8 84       	ldd	r12, Y+8	; 0x08
- 6ea:	df 80       	ldd	r13, Y+7	; 0x07
- 6ec:	ee 80       	ldd	r14, Y+6	; 0x06
- 6ee:	fd 80       	ldd	r15, Y+5	; 0x05
- 6f0:	0c 81       	ldd	r16, Y+4	; 0x04
- 6f2:	1b 81       	ldd	r17, Y+3	; 0x03
- 6f4:	aa 81       	ldd	r26, Y+2	; 0x02
- 6f6:	b9 81       	ldd	r27, Y+1	; 0x01
- 6f8:	ce 0f       	add	r28, r30
- 6fa:	d1 1d       	adc	r29, r1
- 6fc:	0f b6       	in	r0, 0x3f	; 63
- 6fe:	f8 94       	cli
- 700:	de bf       	out	0x3e, r29	; 62
- 702:	0f be       	out	0x3f, r0	; 63
- 704:	cd bf       	out	0x3d, r28	; 61
- 706:	ed 01       	movw	r28, r26
- 708:	08 95       	ret
+00000646 <__epilogue_restores__>:
+ 646:	2a 88       	ldd	r2, Y+18	; 0x12
+ 648:	39 88       	ldd	r3, Y+17	; 0x11
+ 64a:	48 88       	ldd	r4, Y+16	; 0x10
+ 64c:	5f 84       	ldd	r5, Y+15	; 0x0f
+ 64e:	6e 84       	ldd	r6, Y+14	; 0x0e
+ 650:	7d 84       	ldd	r7, Y+13	; 0x0d
+ 652:	8c 84       	ldd	r8, Y+12	; 0x0c
+ 654:	9b 84       	ldd	r9, Y+11	; 0x0b
+ 656:	aa 84       	ldd	r10, Y+10	; 0x0a
+ 658:	b9 84       	ldd	r11, Y+9	; 0x09
+ 65a:	c8 84       	ldd	r12, Y+8	; 0x08
+ 65c:	df 80       	ldd	r13, Y+7	; 0x07
+ 65e:	ee 80       	ldd	r14, Y+6	; 0x06
+ 660:	fd 80       	ldd	r15, Y+5	; 0x05
+ 662:	0c 81       	ldd	r16, Y+4	; 0x04
+ 664:	1b 81       	ldd	r17, Y+3	; 0x03
+ 666:	aa 81       	ldd	r26, Y+2	; 0x02
+ 668:	b9 81       	ldd	r27, Y+1	; 0x01
+ 66a:	ce 0f       	add	r28, r30
+ 66c:	d1 1d       	adc	r29, r1
+ 66e:	0f b6       	in	r0, 0x3f	; 63
+ 670:	f8 94       	cli
+ 672:	de bf       	out	0x3e, r29	; 62
+ 674:	0f be       	out	0x3f, r0	; 63
+ 676:	cd bf       	out	0x3d, r28	; 61
+ 678:	ed 01       	movw	r28, r26
+ 67a:	08 95       	ret
 
-0000070a <__muldi3>:
- 70a:	df 93       	push	r29
- 70c:	cf 93       	push	r28
- 70e:	9f 92       	push	r9
- 710:	a0 e4       	ldi	r26, 0x40	; 64
- 712:	9a 2e       	mov	r9, r26
- 714:	00 24       	eor	r0, r0
- 716:	d0 01       	movw	r26, r0
- 718:	e0 01       	movw	r28, r0
- 71a:	f0 01       	movw	r30, r0
- 71c:	16 95       	lsr	r17
- 71e:	07 95       	ror	r16
- 720:	f7 94       	ror	r15
- 722:	e7 94       	ror	r14
- 724:	d7 94       	ror	r13
- 726:	c7 94       	ror	r12
- 728:	b7 94       	ror	r11
- 72a:	a7 94       	ror	r10
- 72c:	48 f4       	brcc	.+18     	; 0x740 <__muldi3+0x36>
- 72e:	10 68       	ori	r17, 0x80	; 128
- 730:	a2 0f       	add	r26, r18
- 732:	b3 1f       	adc	r27, r19
- 734:	c4 1f       	adc	r28, r20
- 736:	d5 1f       	adc	r29, r21
- 738:	e6 1f       	adc	r30, r22
- 73a:	f7 1f       	adc	r31, r23
- 73c:	08 1e       	adc	r0, r24
- 73e:	19 1e       	adc	r1, r25
- 740:	22 0f       	add	r18, r18
- 742:	33 1f       	adc	r19, r19
- 744:	44 1f       	adc	r20, r20
- 746:	55 1f       	adc	r21, r21
- 748:	66 1f       	adc	r22, r22
- 74a:	77 1f       	adc	r23, r23
- 74c:	88 1f       	adc	r24, r24
- 74e:	99 1f       	adc	r25, r25
- 750:	9a 94       	dec	r9
- 752:	21 f7       	brne	.-56     	; 0x71c <__muldi3+0x12>
- 754:	9d 01       	movw	r18, r26
- 756:	ae 01       	movw	r20, r28
- 758:	bf 01       	movw	r22, r30
- 75a:	c0 01       	movw	r24, r0
- 75c:	11 24       	eor	r1, r1
- 75e:	9f 90       	pop	r9
- 760:	cf 91       	pop	r28
- 762:	df 91       	pop	r29
- 764:	08 95       	ret
+0000067c <__muldi3>:
+ 67c:	df 93       	push	r29
+ 67e:	cf 93       	push	r28
+ 680:	9f 92       	push	r9
+ 682:	a0 e4       	ldi	r26, 0x40	; 64
+ 684:	9a 2e       	mov	r9, r26
+ 686:	00 24       	eor	r0, r0
+ 688:	d0 01       	movw	r26, r0
+ 68a:	e0 01       	movw	r28, r0
+ 68c:	f0 01       	movw	r30, r0
+ 68e:	16 95       	lsr	r17
+ 690:	07 95       	ror	r16
+ 692:	f7 94       	ror	r15
+ 694:	e7 94       	ror	r14
+ 696:	d7 94       	ror	r13
+ 698:	c7 94       	ror	r12
+ 69a:	b7 94       	ror	r11
+ 69c:	a7 94       	ror	r10
+ 69e:	48 f4       	brcc	.+18     	; 0x6b2 <__muldi3+0x36>
+ 6a0:	10 68       	ori	r17, 0x80	; 128
+ 6a2:	a2 0f       	add	r26, r18
+ 6a4:	b3 1f       	adc	r27, r19
+ 6a6:	c4 1f       	adc	r28, r20
+ 6a8:	d5 1f       	adc	r29, r21
+ 6aa:	e6 1f       	adc	r30, r22
+ 6ac:	f7 1f       	adc	r31, r23
+ 6ae:	08 1e       	adc	r0, r24
+ 6b0:	19 1e       	adc	r1, r25
+ 6b2:	22 0f       	add	r18, r18
+ 6b4:	33 1f       	adc	r19, r19
+ 6b6:	44 1f       	adc	r20, r20
+ 6b8:	55 1f       	adc	r21, r21
+ 6ba:	66 1f       	adc	r22, r22
+ 6bc:	77 1f       	adc	r23, r23
+ 6be:	88 1f       	adc	r24, r24
+ 6c0:	99 1f       	adc	r25, r25
+ 6c2:	9a 94       	dec	r9
+ 6c4:	21 f7       	brne	.-56     	; 0x68e <__muldi3+0x12>
+ 6c6:	9d 01       	movw	r18, r26
+ 6c8:	ae 01       	movw	r20, r28
+ 6ca:	bf 01       	movw	r22, r30
+ 6cc:	c0 01       	movw	r24, r0
+ 6ce:	11 24       	eor	r1, r1
+ 6d0:	9f 90       	pop	r9
+ 6d2:	cf 91       	pop	r28
+ 6d4:	df 91       	pop	r29
+ 6d6:	08 95       	ret
 
-00000766 <_exit>:
- 766:	f8 94       	cli
+000006d8 <_exit>:
+ 6d8:	f8 94       	cli
 
-00000768 <__stop_program>:
- 768:	ff cf       	rjmp	.-2      	; 0x768 <__stop_program>
+000006da <__stop_program>:
+ 6da:	ff cf       	rjmp	.-2      	; 0x6da <__stop_program>

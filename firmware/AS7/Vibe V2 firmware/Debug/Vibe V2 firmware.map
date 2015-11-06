@@ -245,7 +245,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x76a
+.text           0x00000000      0x6dc
  *(.vectors)
  .vectors       0x00000000       0x22 C:/Program Files/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.0.68/gcc/dev/attiny84a/avr25/crtattiny84a.o
                 0x00000000                __vector_default
@@ -345,32 +345,32 @@ END GROUP
  .text.__vector_3
                 0x000001a0        0x2 Vibe V2 firmware.o
                 0x000001a0                __vector_3
- .text.main     0x000001a2      0x454 Vibe V2 firmware.o
+ .text.main     0x000001a2      0x3c6 Vibe V2 firmware.o
                 0x000001a2                main
  .text.libgcc.div
-                0x000005f6       0x28 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_udivmodhi4.o)
-                0x000005f6                __udivmodhi4
+                0x00000568       0x28 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_udivmodhi4.o)
+                0x00000568                __udivmodhi4
  .text.libgcc.div
-                0x0000061e       0x44 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_udivmodsi4.o)
-                0x0000061e                __udivmodsi4
+                0x00000590       0x44 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_udivmodsi4.o)
+                0x00000590                __udivmodsi4
  .text.libgcc.mul
-                0x00000662       0x3a c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_mulsidi3.o)
-                0x00000662                __mulsidi3
-                0x00000666                __umulsidi3
+                0x000005d4       0x3a c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_mulsidi3.o)
+                0x000005d4                __mulsidi3
+                0x000005d8                __umulsidi3
  .text.libgcc.prologue
-                0x0000069c       0x38 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_prologue.o)
-                0x0000069c                __prologue_saves__
+                0x0000060e       0x38 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_prologue.o)
+                0x0000060e                __prologue_saves__
  .text.libgcc.prologue
-                0x000006d4       0x36 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_epilogue.o)
-                0x000006d4                __epilogue_restores__
+                0x00000646       0x36 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_epilogue.o)
+                0x00000646                __epilogue_restores__
  .text.libgcc.mul
-                0x0000070a       0x5c c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_muldi3.o)
-                0x0000070a                __muldi3
-                0x00000766                . = ALIGN (0x2)
+                0x0000067c       0x5c c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_muldi3.o)
+                0x0000067c                __muldi3
+                0x000006d8                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000766        0x0 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_exit.o)
-                0x00000766                _exit
-                0x00000766                exit
+ .fini9         0x000006d8        0x0 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_exit.o)
+                0x000006d8                _exit
+                0x000006d8                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -389,11 +389,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000766        0x4 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_exit.o)
+ .fini0         0x000006d8        0x4 c:/program files/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr25\libgcc.a(_exit.o)
  *(.fini0)
-                0x0000076a                _etext = .
+                0x000006dc                _etext = .
 
-.data           0x00800060        0x0 load address 0x0000076a
+.data           0x00800060        0x0 load address 0x000006dc
                 0x00800060                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -410,8 +410,8 @@ END GROUP
  *(.bss*)
  *(COMMON)
                 0x00800060                PROVIDE (__bss_end, .)
-                0x0000076a                __data_load_start = LOADADDR (.data)
-                0x0000076a                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x000006dc                __data_load_start = LOADADDR (.data)
+                0x000006dc                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x00800060        0x0
                 0x00800060                PROVIDE (__noinit_start, .)
@@ -490,30 +490,30 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0xdb8
+.debug_info     0x00000000      0xcec
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0xdb8 Vibe V2 firmware.o
+ .debug_info    0x00000000      0xcec Vibe V2 firmware.o
 
 .debug_abbrev   0x00000000      0x331
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x331 Vibe V2 firmware.o
 
-.debug_line     0x00000000      0x542
+.debug_line     0x00000000      0x4d1
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x542 Vibe V2 firmware.o
+ .debug_line    0x00000000      0x4d1 Vibe V2 firmware.o
 
 .debug_frame    0x00000000      0x120
  *(.debug_frame)
  .debug_frame   0x00000000      0x120 Vibe V2 firmware.o
 
-.debug_str      0x00000000      0x345
+.debug_str      0x00000000      0x335
  *(.debug_str)
- .debug_str     0x00000000      0x345 Vibe V2 firmware.o
-                                0x380 (size before relaxing)
+ .debug_str     0x00000000      0x335 Vibe V2 firmware.o
+                                0x370 (size before relaxing)
 
-.debug_loc      0x00000000     0x1237
+.debug_loc      0x00000000      0xe49
  *(.debug_loc)
- .debug_loc     0x00000000     0x1237 Vibe V2 firmware.o
+ .debug_loc     0x00000000      0xe49 Vibe V2 firmware.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -533,9 +533,9 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000      0x2f0
+.debug_ranges   0x00000000      0x238
  *(.debug_ranges)
- .debug_ranges  0x00000000      0x2f0 Vibe V2 firmware.o
+ .debug_ranges  0x00000000      0x238 Vibe V2 firmware.o
 
 .debug_macro
  *(.debug_macro)

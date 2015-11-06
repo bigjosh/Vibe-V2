@@ -92,5 +92,8 @@ The device should be REJECTED if there is any deviation from the specified respo
 7. Press and release the button. The white LED should light while the button is depressed and go off when released. The motor should come on at low speed. Note that for each of the following button presses, if you hold the button down for longer than about 0.5 seconds the motor will turn off. In this case, you can start the cycle over again. 
 8. Press and release the button. The white LED should come on while the button is down and turn off when released. The motor should switch to medium speed.
 9. Press and release the button. The white LED should come on while the button is down and turn off when released. The motor should switch to medium speed.
-10. Press and release the button. The white LED should come on while the button is down and turn off when released. The motor should turn off. 
+10. Press and release the button. The white LED should come on while the button is down and turn off when released. The motor should turn off.
+11. Press and hold the button until you see both LEDs quickly flash twice. This indicates that the device is now in Transit Lockout Mode and ready for shipping. The device will not respond to button presses again until it is connected to a charger. 
+12. Release the button.
+13. Pack unit into git box.   
 

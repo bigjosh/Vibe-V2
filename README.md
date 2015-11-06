@@ -11,17 +11,26 @@ https://github.com/bigjosh/VibeSystem
 
 User Interface
 --------------
+
+###Transit Lockout Mode
+Device ships in Transit Lockout Mode to prevent inadvertently turning on while in transit. In this mode, the button is completely disconnected and non-functional. To escape from transit mode into normal operating mode, you must connect the unit to the charger.
+
+You can put the device back into transit mode by holding the button down for more than 10 seconds. Both red and white LEDs will quickly flash twice to indicate that Transit Lockout Mode has been activated.  
+
+Note this mode also protects the unit from over discharging the battery in case the button gets stuck down because something is pressing on it.  
+
+###Normal Operating Mode
 Device is normally in a low-power off state.
 
 A long button press (~0.25 sec) goes straight to off state from any speed. 
 
 A short button press steps to the next speed setting upon button release. There are 3 speed settings (low, medium, high) and a 4th button press returns to off state.
 
-When battery gets low, the motor turns off and the red LED lights for about 1 second. Subsequent button pushes blink the red LED again to indicate not enough power to turn on. Note that Litium Polymer batteries recover some voltage while resting, so it is possible to briefly turn the unit back on even after it has automatically turned off from low battery. Doing this repeatedly will lead to shorter and short on times until eventually the battery is too depleated to have any revcovery left.
+When battery gets low, the motor turns off and the red LED lights for about 1 second. Subsequent button pushes blink the red LED again to indicate not enough power to turn on. Note that Lithium Polymer batteries recover some voltage while resting, so it is possible to briefly turn the unit back on even after it has automatically turned off from low battery. Doing this repeatedly will lead to shorter and short on times until eventually the battery is too depleted to have any recovery left.
 
 Because the battery has reduced voltage under load, there are different cutoff voltages for initial turn on and continuing operation. The battery must be at least 3.3 volts for the motor to start, but once started it will continue to run until the battery drops to 3.1 volts. 
 
-For user feedback, the white LED is lit at about 50% brightness whenever the button is pushed, at least until we go into <a href="#stuck-button-defense"><i>stuck-button warning mode</i></a>.
+For user feedback, the white LED is lit for about 250ms first pressed. If the button is held down, it the white LED will flash for 100ms every second while the until either the button is released or <a href="#transit-lockout-mode">Transit Lockout Mode</a> is activated.  
 
 The white LED also indicates charger status: 
 
@@ -45,7 +54,9 @@ On initial power-up, the devices enters a test mode...
   1. If the LEDs continue to alternate flash after you push the button, then you probably have a bad button or bad connection from the board to the button. 
   2. If the white LED stays lit at 50% brightness after you release the button, then you probably have a stuck button.
 
-Note that both above LED indications time out after about 30 seconds to avoid killing the battery. If the button stays down past the timeout, the the unit will enter "stuck button defense" mode (see below). 
+Note that if the button is pressed upon initial power-up, then the normal test mode red/white blinking is skipped (because this is typically terminated by a button press).
+
+Note that both above LED indications time out after about 30 seconds to avoid killing the battery. If the button stays down past the timeout, the the unit will eventually enter Transit Lockout Mode. 
 
 Note that test mode only happens on initial power up. Because the board is very low power, it can continue to operate off the residual charge in the capacitor for a long time (days-months). Because of this, you must follow this procedure to re-enter test mode once the device has been powered up (it is not enough just to remove the battery and replace it)... 
 
@@ -53,28 +64,6 @@ Note that test mode only happens on initial power up. Because the board is very 
 2. push and hold the button for a second to exhaust all the residual power from the capacitors
 3. reconnect power and test mode should start again
  
-Stuck Button Defense
---------------------
-To avoid damage to the battery, the device will enter a <i>stuck-button lockout</i> if the button is held down for too long (maybe because something is resting on top of the unit and pressing the button). When this happens, the button is completely disabled and the Vibe must be plugged into a charger to reset it. 
-
-The <i>stuck button lockout</i> sequence goes like this...
-
-1. When the button is initially pressed, the white LED lights at 50% brightness. 
-2. If the button is held down for 250ms, then the motor is turned off if it was running. 
-3. If the button is held down for more than 8 seconds, then we go into <i>stuck-button warning mode</i>. In this mode, the white LED blinks at 50% brightness for 100ms each second. It looks like a heartbeat.
-4. If the button is held down for more than about 30 minutes once it enters <i>stuck-button warning mode</i>, then we go into <i>stuck-button lockout</i> and the button is disabled. 
-
-If the button is released anytime before the <i>stuck-button lockout</i>, then the white LED is turned off and we return to normal operation.
-
-If the button is pressed upon initial power-up, then the normal test mode red/white blinking is skipped (becuase this is typically terminated by a button press) and we just straight into <i>stuck-button warning mode</i>.
-
-|State|Indication|Timeout|
-|----|-------|---|
-|Normal press|Whilte LED 50% brightness, 100% duty|250ms|
-|Long press|Whilte LED 50% brightness, 100% duty|8 seconds|
-|Stuck-button warning mode|Whilte LED 50% brightness, 10% duty, 1Hz frequency|30 minutes|
-
-Note that <i>stuck-button warning mode</i> uses about 3mA, so it is possible that a button that repeatedly gets stuck for for less than 30 minutes at a time could eventually wear down the battery, but this seem unlikely since the first time it was stuck for more than 30 minutes, then it would lockout and require a connecttion to a charger to reset.
 
 Features
 --------
