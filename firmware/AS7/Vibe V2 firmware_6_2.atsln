@@ -1,0 +1,20 @@
+
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Vibe V2 firmware", "Vibe V2 firmware\Vibe V2 firmware_6_2.cproj", "{37589834-861C-4E3D-9AFF-DFFE51015614}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37589834-861C-4E3D-9AFF-DFFE51015614}.Debug|AVR.ActiveCfg = Debug|AVR
+		{37589834-861C-4E3D-9AFF-DFFE51015614}.Debug|AVR.Build.0 = Debug|AVR
+		{37589834-861C-4E3D-9AFF-DFFE51015614}.Release|AVR.ActiveCfg = Release|AVR
+		{37589834-861C-4E3D-9AFF-DFFE51015614}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
